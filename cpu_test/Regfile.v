@@ -20,16 +20,15 @@ module regfile (
 	reg[`RegBus] registers[0:`RegNum - 1]
 
 	always @ ( posedge clk ) begin
-		if (rst == `ResDisable)
+		if (rst == `RstDisable)
 			if (we == `WriteEnable && waddr != `RegNumLog2'h0)
 				regs[waddr] <= wdata;
 	end
 
 	always @ ( * ) begin
-		if (rst == `ResEable) begin
+		if (rst == `RstEnable)
 			rdata1 <= `ZeroWord;
-			rdata2 <= `ZeroWord;
-		end else begin
+		else begin
 			if (re1 == `ReadEnable && raddr1 != `RegNumLog2'h0)
 				if (we == `WriteEnable && waddr == raddr1)
 					rdata1 <= wdata;
@@ -37,6 +36,13 @@ module regfile (
 					rdata1 <= regs[raddr1];
 			else
 				rdata1 <= `ZeroWord;
+		end
+	end
+
+	always @ ( * ) begin
+		if (rst == `RstEnable)
+			rdata2 <= `ZeroWord;
+		else begin
 			if (re2 == `ReadEnable && raddr2 != `RegNumLog2'h0)
 				if (we == `WriteEnable && waddr == raddr2)
 					rdata2 <= wdata;
@@ -62,14 +68,19 @@ module IF_ID (
 	);
 
 	always @ ( posedge clk ) begin
-		if (rst == ResEable) begin
+		if (rst == RstEnable)
 			id_pc <= `ZeroWord;
-			id_inst <= `ZeroWord;
-		end else begin
+		else
 			id_pc <= if_pc;
-			id_inst <= if_inst;
-		end
 	end
+
+	always @ ( posedge clk ) begin
+		if (rst == RstEnable)
+			id_inst <= `ZeroWord;
+		else
+			id_inst <= if_inst;
+	end
+
 endmodule // IF_ID
 
 module ID_EX ();
