@@ -24,11 +24,17 @@ module RegFile(
 
 	end
 
+	integer j;
 	always @ ( posedge clk ) begin
 		if (rst == `RstDisable)
 			if (we == `WriteEnable && waddr != 5'b00000)begin
 				registers[waddr] <= wdata;
-				$display("waddr %d, wdata %h\n", waddr, wdata);
+				for(j = 1; j < 6; j = j + 1)begin
+					if (j == waddr)
+						$display("reg[%d]=%h", j, wdata);
+					else
+				 		$display("reg[%d]=%h", j, registers[j]);
+				end
 			end
 	end
 
@@ -37,7 +43,7 @@ module RegFile(
 			rdata1 <= `ZeroWord;
 		else begin
 			if (re1 == `ReadEnable)begin
-				$display("raddr1 %d, rdata1 %h\n", raddr1, registers[raddr1]);
+				// $display("raddr1 %d, rdata1 %h\n", raddr1, registers[raddr1]);
 				if (we == `WriteEnable && waddr == raddr1)
 					rdata1 <= wdata;
 				else
@@ -53,7 +59,7 @@ module RegFile(
 			rdata2 <= `ZeroWord;
 		else begin
 			if (re2 == `ReadEnable)begin
-				$display("raddr2 %d, rdata2 %h", raddr2, registers[raddr2]);
+				// $display("raddr2 %d, rdata2 %h", raddr2, registers[raddr2]);
 				if (we == `WriteEnable && waddr == raddr2)
 					rdata2 <= wdata;
 				else

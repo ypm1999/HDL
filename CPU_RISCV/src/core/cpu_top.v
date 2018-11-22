@@ -21,6 +21,52 @@ module CORE_TOP (
 	wire[`RomAddrBus]	id_pc;
  	wire[`InstBus]		id_inst;
 
+    //ID->REGFile->ID
+	wire 				reg_re1;
+	wire 				reg_re2;
+	wire[`RegAddrBus]	reg_raddr1;
+	wire[`RegAddrBus]	reg_raddr2;
+	wire[`RegBus]		reg_data1;
+	wire[`RegBus]		reg_data2;
+	wire				reg_we;
+	wire[`RegAddrBus]	reg_waddr;
+	wire[`RegBus]		reg_wdata;
+
+	//ID->IDEX->EX
+	wire[`AluOpBus] 	id_aluop;
+	wire[`AluSelBus] 	id_alusel;
+	wire				id_funct;
+	wire				id_we;
+	wire[`RegAddrBus]	id_waddr;
+	wire[`RegBus]		id_data1;
+	wire[`RegBus]		id_data2;
+
+    //EX->EXMEM
+    wire[`AluOpBus] 	ex_aluop;
+	wire[`AluSelBus] 	ex_alusel;
+	wire				ex_funct;
+	wire				ex_we_in;
+	wire[`RegAddrBus]	ex_waddr_in;
+	wire[`RegBus]		ex_data1;
+	wire[`RegBus]		ex_data2;
+	wire 				ex_we_out;
+	wire[`RegAddrBus]	ex_waddr_out;
+	wire[`RegBus]		ex_wdata_out;
+
+    //EXMEM->MEM
+    wire 				mem_we_in;
+	wire[`RegAddrBus]	mem_waddr_in;
+	wire[`RegBus]		mem_wdata_in;
+
+    //MEM->MEMWB->WB
+	wire 				mem_we_out;
+	wire[`RegAddrBus]	mem_waddr_out;
+	wire[`RegBus]		mem_wdata_out;
+    wire 				wb_we_in;
+	wire[`RegAddrBus]	wb_waddr_in;
+	wire[`RegBus]		wb_wdata_in;
+
+
 	pc_reg pc_reg0(
 		.clk(clk),
 		.rst(rst),
@@ -47,26 +93,6 @@ module CORE_TOP (
 		);
 
 
-	//ID->REGFile->ID
-	wire 				reg_re1;
-	wire 				reg_re2;
-	wire[`RegAddrBus]	reg_raddr1;
-	wire[`RegAddrBus]	reg_raddr2;
-	wire[`RegBus]		reg_data1;
-	wire[`RegBus]		reg_data2;
-	wire				reg_we;
-	wire[`RegAddrBus]	reg_waddr;
-	wire[`RegBus]		reg_wdata;
-
-	//ID->IDEX->EX
-	wire[`AluOpBus] 	id_aluop;
-	wire[`AluSelBus] 	id_alusel;
-	wire				id_funct;
-	wire				id_we;
-	wire[`RegAddrBus]	id_waddr;
-	wire[`RegBus]		id_data1;
-	wire[`RegBus]		id_data2;
-
     // always @ ( * ) begin
     //     $display("id_inst:%d\n", id_inst);
     // end
@@ -77,6 +103,12 @@ module CORE_TOP (
 		.inst(id_inst),
 		.rdata1(reg_data1),
 		.rdata2(reg_data2),
+        .ex_we(ex_we_out),
+        .ex_waddr(ex_waddr_out),
+        .ex_wdata(ex_wdata_out),
+        .mem_we(mem_we_out),
+        .mem_waddr(mem_waddr_out),
+        .mem_wdata(mem_wdata_out),
 		.aluop(id_aluop),
 		.alusel(id_alusel),
 		.funct(id_funct),
@@ -106,16 +138,7 @@ module CORE_TOP (
 		.rdata2(reg_data2)
 		);
 
-	wire[`AluOpBus] 	ex_aluop;
-	wire[`AluSelBus] 	ex_alusel;
-	wire				ex_funct;
-	wire				ex_we_in;
-	wire[`RegAddrBus]	ex_waddr_in;
-	wire[`RegBus]		ex_data1;
-	wire[`RegBus]		ex_data2;
-	wire 				ex_we_out;
-	wire[`RegAddrBus]	ex_waddr_out;
-	wire[`RegBus]		ex_wdata_out;
+
 
 	ID_EX id_ex0(
 		.clk(clk),
@@ -153,9 +176,7 @@ module CORE_TOP (
 		.wdata(ex_wdata_out)
 		);
 
-	wire 				mem_we_in;
-	wire[`RegAddrBus]	mem_waddr_in;
-	wire[`RegBus]		mem_wdata_in;
+
 
 
 	EX_MEM ex_mem0(
@@ -171,9 +192,6 @@ module CORE_TOP (
 		.mem_wdata(mem_wdata_in)
 		);
 
-	wire 				mem_we_out;
-	wire[`RegAddrBus]	mem_waddr_out;
-	wire[`RegBus]		mem_wdata_out;
 
     MEM mem0(
         .rst(rst),
@@ -186,9 +204,7 @@ module CORE_TOP (
         .wdata_out(mem_wdata_out)
         );
 
-	wire 				wb_we_in;
-	wire[`RegAddrBus]	wb_waddr_in;
-	wire[`RegBus]		wb_wdata_in;
+
 
 	MEM_WB mem_wb0(
 		.clk(clk),

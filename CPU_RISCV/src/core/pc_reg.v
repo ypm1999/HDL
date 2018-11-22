@@ -8,6 +8,10 @@ module pc_reg (
 	output reg 				ce
 	);
 
+	initial begin
+		pc <= 0;
+	end
+
 	always @ ( posedge clk ) begin
 		if (rst != `RstDisable)
 			ce <= `ClipDisable;
@@ -19,7 +23,7 @@ module pc_reg (
 		if (rst != `RstDisable)
 			pc <= `ZeroWord;
 		else
-			pc <= 4'h4;
+			pc <= pc + 4'h4;
 	end
 
 endmodule // pc_reg

@@ -41,6 +41,14 @@ module ID (
 	input wire[`RegBus]			rdata1,
 	input wire[`RegBus]			rdata2,
 
+	input wire 					ex_we,
+	input wire[`RegAddrBus]		ex_waddr,
+	input wire[`RegBus]			ex_wdata,
+
+	input wire 					mem_we,
+	input wire[`RegAddrBus]		mem_waddr,
+	input wire[`RegBus]			mem_wdata,
+
 	output reg[`AluOpBus] 		aluop,
 	output reg[`AluSelBus] 		alusel,
 
@@ -77,7 +85,7 @@ module ID (
 		end
 		else begin
 			$display("operate: %d", inst);
-			$display("operate: %b", inst[6:0]);
+			// $display("operate: %b", inst[6:0]);
 			case(inst[6:0])
 				7'b0110111 :we <= `True_v;// U
 				7'b0010111 :we <= `True_v;// U
@@ -88,7 +96,7 @@ module ID (
 				7'b0100011 :we <= `True_v;// S
 				7'b0010011 :// I/R;
                 begin
-					if (func3 == 3'b000)
+					if (func3 == 3'b111)
 						$display("ANDI %d %d %h\n", inst[19:15], inst[11:7], {{20{1'b0}}, inst[31:20]});
 					if (func3 == 3'b110)
 						$display("ORI %d %d %h\n", inst[19:15], inst[11:7], {{20{1'b0}}, inst[31:20]});
@@ -96,6 +104,7 @@ module ID (
 						$display("SLLI %d %d %h\n", inst[19:15], inst[11:7], {{27{1'b0}}, inst[24:20]});
 					we <= `True_v;
 					re1 <= `True_v;
+					re2 <= `False_v;
 					if (func3 == 3'b001 || func3 == 3'b101)
 						imm <= {{27{1'b0}}, inst[24:20]};
 					else if (func3 != 3'b011)
@@ -104,7 +113,11 @@ module ID (
 						imm <= {{20{1'b0}}, inst[31:20]};
 				end
 				7'b0110011 :we <= `True_v;// R
-				default :we <= `True_v;
+				default :begin
+					we <= `False_v;
+					re1 <= `False_v;
+					re2 <= `False_v;
+				end
 			endcase
 		end
 	end
@@ -113,8 +126,12 @@ module ID (
 		if (rst == `RstEnable)
 			reg1 <= `ZeroWord;
 		else if (re1 == `True_v) begin
-			reg1 <= rdata1;
-			// $display("reg1 <= data1(%h)", rdata1);
+			if (ex_we == `True_v && ex_waddr == raddr1)
+				reg1 <= ex_wdata;
+			else if(mem_we == `True_v && mem_waddr == raddr1)
+				reg1 <= mem_wdata;
+			else
+				reg1 <= rdata1;
 		end
 		else
 			reg1 <= imm;
@@ -123,8 +140,14 @@ module ID (
 	always @ ( * ) begin
 		if (rst == `RstEnable)
 			reg2 <= `ZeroWord;
-		else if (re2 == `True_v)
-			reg2 <= rdata2;
+		else if (re2 == `True_v)begin
+			if (ex_we == `True_v && ex_waddr == raddr2)
+				reg2 <= ex_wdata;
+			else if(mem_we == `True_v && mem_waddr == raddr2)
+				reg2 <= mem_wdata;
+			else
+				reg2 <= rdata2;
+		end
 		else begin
 			reg2 <= imm;
 			// $display("reg2 <= imm");

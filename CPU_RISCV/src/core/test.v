@@ -16,7 +16,7 @@ module CPU_TEST ();
 	initial begin
 		rst = `RstEnable;
 		#195 rst = `RstDisable;
-		#300 $stop;
+		#500 $stop;
 	end
 
 	SOPC test_sopc0(
