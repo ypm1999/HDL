@@ -1,8 +1,9 @@
 `include "defines.v"
 
 module MEM_WB (
-	input wire clk,
-	input wire rst,
+	input wire 					clk,
+	input wire 					rst,
+	input wire 					rdy,
 
 	input wire 					mem_we,
 	input wire[`RegAddrBus] 	mem_waddr,

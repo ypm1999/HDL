@@ -4,6 +4,7 @@
 module IF_ID (
 	input wire 					clk,
 	input wire 					rst,
+	input wire 					rdy,
 
 	input wire[`InstAddrBus]	if_pc,
 	input wire[`InstBus] 		if_inst,

@@ -2,8 +2,9 @@
 
 
 module EX_MEM (
-	input wire clk,
-	input wire rst,
+	input wire 					clk,
+	input wire 					rst,
+	input wire 					rdy,
 
 	input wire 					ex_we,
 	input wire[`RegAddrBus] 	ex_waddr,

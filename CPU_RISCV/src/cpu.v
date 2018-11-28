@@ -27,17 +27,6 @@ module cpu(
 // - 0x30004 read: read clocks passed since cpu starts (in dword, 4 bytes)
 // - 0x30004 write: indicates program stop (will output '\0' through uart tx)
 
-always @(posedge clk_in)begin
-    if (rst_in)begin
-    end
-    else if (!rdy_in)begin
-    end
-    else begin
-    end
-end
-
-
-
 //IF->IFID->ID
 wire[`RomAddrBus]	if_pc;
 wire[`RomAddrBus]	id_pc;
@@ -89,7 +78,7 @@ wire[`RegAddrBus]	wb_waddr_in;
 wire[`RegBus]		wb_wdata_in;
 
 
-pc_reg pc_reg0(
+IF if0(
 	.clk(clk_in),
 	.rst(rst_in),
     .rdy(rdy_in),
@@ -97,14 +86,14 @@ pc_reg pc_reg0(
 	.ce(rom_ce)
 	);
 
-assign rom_raddr = if_pc;
+assign mem_a = if_pc;
 
 IF_ID if_id0(
 	.clk(clk_in),
 	.rst(rst_in),
 	.rdy(rdy_in),
 	.if_pc(if_pc),
-	.if_inst(rom_rdata),
+	.if_inst(),
 	.id_pc(id_pc),
 	.id_inst(id_inst)
 	);
@@ -140,6 +129,7 @@ RegFile regfile0(
 	.clk(clk_in),
 	.rst(rst_in),
 	.rdy(rdy_in),
+
 	.we(reg_we),
 	.waddr(reg_waddr),
 	.wdata(reg_wdata),

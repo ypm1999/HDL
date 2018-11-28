@@ -1,8 +1,9 @@
 `include "defines.v"
 
-module pc_reg (
+module IF (
 	input wire 				clk,
 	input wire 				rst,
+	input wire 				rdy,
 
 	output reg[`RomAddrBus] pc,
 	output reg 				ce

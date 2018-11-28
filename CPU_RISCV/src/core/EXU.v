@@ -3,6 +3,7 @@
 module ID_EX (
 	input wire 					clk,
 	input wire 					rst,
+	input wire 					rdy,
 
 	input wire[`AluOpBus] 		opcode_id,
 	input wire[`AluSelBus] 		alusel_id,

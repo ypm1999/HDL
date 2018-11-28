@@ -1,5 +1,7 @@
 `include "defines.v"
 
-module MemoryCtrl ();
+module MemoryCtrl (
+
+	);
 
 endmodule // MemoryCtrl
