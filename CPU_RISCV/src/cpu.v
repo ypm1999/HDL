@@ -78,6 +78,29 @@ wire[`RegAddrBus]	wb_waddr_in;
 wire[`RegBus]		wb_wdata_in;
 
 
+
+
+
+Memory_Accesser mem_accesser0(
+    .clk(clk),
+    .rst(rst),
+    .rdy(rdy),
+
+    .mem_din(mem_din),
+    .mem_dout(mem_dout),
+    .mem_a(mem_a),
+    .mem_wr(mem_wr),
+
+    );
+
+Memory_Ctrl
+
+
+
+
+
+
+
 IF if0(
 	.clk(clk_in),
 	.rst(rst_in),
@@ -92,6 +115,7 @@ IF_ID if_id0(
 	.clk(clk_in),
 	.rst(rst_in),
 	.rdy(rdy_in),
+
 	.if_pc(if_pc),
 	.if_inst(),
 	.id_pc(id_pc),
@@ -182,9 +206,6 @@ EX ex0(
 	.waddr(ex_waddr_out),
 	.wdata(ex_wdata_out)
 	);
-
-
-
 
 EX_MEM ex_mem0(
 	.clk(clk_in),

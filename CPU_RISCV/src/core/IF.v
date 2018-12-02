@@ -5,6 +5,9 @@ module IF (
 	input wire 				rst,
 	input wire 				rdy,
 
+	input wire 				use_npc,
+	input wire[31:0]		npc_addr,
+
 	output reg[`RomAddrBus] pc,
 	output reg 				ce
 	);
@@ -23,7 +26,8 @@ module IF (
 	always @ ( posedge clk ) begin
 		if (rst != `RstDisable)
 			pc <= `ZeroWord;
-		else
+		else begin
+
 			pc <= pc + 4'h4;
 	end
 
