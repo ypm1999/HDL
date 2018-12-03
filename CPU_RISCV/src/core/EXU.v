@@ -12,6 +12,7 @@ module ID_EX (
 	input wire[`RegBus]			data2_id,
 	input wire 					we_id,
 	input wire[`RegAddrBus]		waddr_id,
+	input wire[4:0] 			stall,
 
 	output reg[`AluOpBus] 		opcode_ex,
 	output reg[`AluSelBus] 		alusel_ex,
@@ -24,7 +25,7 @@ module ID_EX (
 
 	always @ ( posedge clk ) begin
 		if (rst == `RstEnable)begin
-			opcode_ex <= `NOP_OP;
+			opcode_ex <= 7'b0000000;
 			alusel_ex <= 3'b000;
 			funct_ex <= `False_v;
 			data1_ex <= `ZeroWord;
@@ -32,14 +33,25 @@ module ID_EX (
 			we_ex <= `False_v;
 			waddr_ex <= `ZeroWord;
 		end
-		else begin
-			opcode_ex <= opcode_id;
-			alusel_ex <= alusel_id;
-			funct_ex <= funct_id;
-			data1_ex <= data1_id;
-			data2_ex <= data2_id;
-			we_ex <= we_id;
-			waddr_ex <= waddr_id;
+		else if (rdy == `True_v) begin
+			if (stall[1] == `True_v && stall[2] == `False_v)begin
+				opcode_ex <= 7'b0000000;
+				alusel_ex <= 3'b000;
+				funct_ex <= `False_v;
+				data1_ex <= `ZeroWord;
+				data2_ex <= `ZeroWord;
+				we_ex <= `False_v;
+				waddr_ex <= `ZeroWord;
+			end
+			else begin
+				opcode_ex <= opcode_id;
+				alusel_ex <= alusel_id;
+				funct_ex <= funct_id;
+				data1_ex <= data1_id;
+				data2_ex <= data2_id;
+				we_ex <= we_id;
+				waddr_ex <= waddr_id;
+			end
 			// $display("opcode:%b alusel:%b funct:%b\ndata1:%h  data2:%h\nwe:%b waddr:%d",
 			// 		opcode_id, alusel_id, funct_id, data1_id, data2_id, we_id, waddr_id);
 		end
@@ -51,6 +63,8 @@ endmodule // ID_EX
 
 module EX (
 	input wire 					rst,
+	input wire 					rdy,
+	
 	input wire[`AluOpBus] 		opcode,
 	input wire[`AluSelBus] 		alusel,
 	input wire 					funct,
@@ -61,7 +75,9 @@ module EX (
 
 	output reg 					we,
 	output reg[`RegAddrBus]		waddr,
-	output reg[`RegBus]			wdata
+	output reg[`RegBus]			wdata,
+
+	output reg 					stall_req
 	);
 
 	always @ ( * ) begin
@@ -69,7 +85,7 @@ module EX (
 			we <= `False_v;
 			waddr <= 5'b00000;
 		end
-		else begin
+		else if(rdy == `True_v)  begin
 			we <= we_in;
 			waddr <= waddr_in;
 			// $display("opcode:%b alusel:%b funct:%b\ndata1:%h  data2:%h\nwe:%b waddr:%d\n",
@@ -80,7 +96,8 @@ module EX (
 	always @ ( * ) begin
 		if(rst == `RstEnable) begin
 			wdata <= `ZeroWord;
-		end else begin
+		end
+		else if(rdy == `True_v) begin
 			case (alusel)
 				`AND_SEL: wdata <= data1 & data2;
 				`OR_SEL: wdata <= data1 | data2;

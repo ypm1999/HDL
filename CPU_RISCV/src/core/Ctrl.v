@@ -15,10 +15,8 @@ module Ctrl (
 
 	always @ (*) begin
 	if (rst == `True_v)
-		stall_cmd
-		if (rdy == `False_v)
-			stall_cmd <= 5'b11111;
-		else begin
+		stall_cmd <= 5'b00000;
+	else if (rdy == `True_v) begin
 			if (mem_stall_req == `True_v)
 				stall_cmd <= 5'b11110;
 			else if (ex_stall_req == `True_v)

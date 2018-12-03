@@ -1,6 +1,5 @@
 `include "defines.v"
 
-
 module Memory_Accesser (
 	input  wire                 clk,
 	input  wire                 rst,
@@ -12,22 +11,21 @@ module Memory_Accesser (
     output reg                  mem_wr,			// write/read signal (1 for write)
 
 	input wire 					re,
-	input wire [31:0]			mem_raddr,
-	input wire [31:0]			mem_rdata,
-
 	input wire 					we,
-	input wire [31:0]			mem_waddr,
+	input wire [31:0]			mem_addr,
 	input wire [31:0]			mem_wdata,
+	output reg [31:0]			mem_rdata,
 
 	output reg 					busy
 	);
 
 	reg 		rbusy, wbusy, wstart;
 	reg[2:0] 	rcnt, wcnt;
+
 	initial begin
-		rbusy <= 1'b0;
-		wbusy <= 1'b0;
-		busy <= 0;
+		rbusy <= `False_v;
+		wbusy <= `False_v;
+		busy <= `False_v;
 		rcnt <= 2'b11;
 		wcnt <= 2'b11;
 	end
@@ -36,13 +34,13 @@ module Memory_Accesser (
 	always @ ( * ) begin
 		if (rst == `True_v)begin
 			mem_rdata <= `ZeroWord;
-			busy <= 1'b0;
+			busy <= `False_v;
 		end
-		else if (rdy && re == `True_v)begin
+		else if (rdy == `True_v && re == `True_v)begin
 			rbusy <= `True_v;
 			busy <= `True_v;
 			rcnt <= 2'b00;
-			mem_a <= mem_raddr;
+			mem_a <= mem_addr;
 			mem_wr <= 1'b0;
 		end
 	end
@@ -51,9 +49,9 @@ module Memory_Accesser (
 	always @ ( mem_dout ) begin
 		if (rst == `True_v)begin
 			mem_rdata <= `ZeroWord;
-			busy <= 1'b0;
+			busy <= `False_v;
 		end
-		else if(rdy && rbusy == `True_v) begin
+		else if(rdy == `True_v && rbusy == `True_v) begin
 			mem_rdata[{rcnt, 3'b111}:{rcnt, 3'b000}] <= mem_dout;// merge data form lowest byte
 			if(rcnt == 2'b11)begin //4Byte read finished
 				rbusy <=`False_v;
@@ -68,23 +66,23 @@ module Memory_Accesser (
 
 	always @ ( * ) begin
 		if (rst == `True_v)begin
-			busy <= 1'b0;
+			busy <= `False_v;
 		end
-		else if (rdy && we == `True_v)begin
+		else if (rdy == `True_v && we == `True_v)begin
 			wbusy <= `True_v;
 			busy <= `True_v;
 			wstart <= `False_v;
 			wcnt <= 2'b00;
-			mem_a <= mem_waddr;
+			mem_a <= mem_addr;
 			mem_wr <= 1'b1;
 		end
 	end
 
 	always @ ( negedge clk ) begin
 		if (rst == `True_v)begin
-			busy <= 1'b0;
+			busy <= `False_v;
 		end
-		else if(rdy && wbusy == `True_v)
+		else if(rdy == `True_v && wbusy == `True_v)
 			if(wstart == `True_v)begin
 				mem_din <= mem_wdata[{wcnt, 3'b111}:{wcnt, 3'b000}];
 				if(wcnt == 2'b11)begin
@@ -112,32 +110,125 @@ module Memory_Ctrl (
 	output reg [31:0]			inst_rdata,
 	output reg 					inst_busy,
 
-	input wire 					re,
+	input wire 					mem_re,
 	input wire [31:0]			mem_raddr,
 	output reg [31:0]			mem_rdata,
 	output reg 					mem_rbusy,
 
-	input wire 					we,
+	input wire 					mem_we,
 	input wire [31:0]			mem_waddr,
 	input wire [31:0]			mem_wdata,
-	output reg 					mem_wbusy
+	output reg 					mem_wbusy,
+
+	input wire 					ram_busy,
+	input wire [31:0] 			ram_rdata,
+
+	output reg 					ram_we,
+	output reg 					ram_re,
+	output reg [31:0]			ram_addr,
+	output reg [31:0]			ram_wdata
 	);
 
 	reg [31:0] raddr_inst, raddr_mem, waddr_mem, wdata_mem;
+	reg inst_rwait, mem_rwait, mem_wwait, inst_rwork, mem_rwork, mem_wwork;
+
+	initial begin
+		inst_rwait <= `False_v;
+		mem_rwait <= `False_v;
+		mem_wwait <= `False_v;
+		inst_rwork <= `False_v;
+		mem_rwork <= `False_v;
+		mem_wwork <= `False_v;
+		raddr_inst <=`ZeroWord;
+		raddr_mem <=`ZeroWord;
+		waddr_mem <=`ZeroWord;
+		wdata_mem <=`ZeroWord;
+	end
 
 	always @ ( * ) begin
 		if (rst == `True_v)begin
+			inst_rwait <= `False_v;
+			mem_rwait <= `False_v;
+			mem_wwait <= `False_v;
+			inst_rbusy <= `False_v;
+			mem_rbusy <= `False_v;
+			mem_wbusy <= `False_v;
+			raddr_inst <=`ZeroWord;
+			raddr_mem <=`ZeroWord;
+			waddr_mem <=`ZeroWord;
+			wdata_mem <=`ZeroWord;
 		end
-		else if (rdy && mem_access_busy == `False_v) begin
-			if (we == `True_v)
+		else if (rdy == `True_v && mem_access_busy == `False_v) begin
+			if (mem_we == `True_v && mem_wwait == `False_v)begin
+				wdata_mem <= mem_wdata;
+				waddr_mem <= mem_waddr;
+				mem_wwait <= `True_v;
+				mem_wbusy <= `True_v;
+			end
+			if (mem_re == `True_v && mem_rwait == `False_v)begin
+				raddr_mem <= mem_raddr;
+				mem_rwait <= `True_v;
+				mem_rbusy <= `True_v;
+			end
+			if (inst_re == `True_v && inst_rwait == `False_v)begin
+				raddr_inst <= inst_raddr;
+				inst_rwait <= `True_v;
+				inst_rbusy <= `True_v;
+			end
 		end
 	end
 
+	always @ ( * ) begin
+		if (rst == `True_v)begin
+			inst_rwork <= `False_v;
+			mem_rwork <= `False_v;
+			mem_wwork <= `False_v;
+			inst_rbusy <= `False_v;
+			mem_rbusy <= `False_v;
+			mem_wbusy <= `False_v;
+		end
+		else if (rdy == `True_v && ram_busy == `False_v)begin
+			if (inst_rwork == `True_v) begin
+				inst_rdata <= ram_rdata;
+				inst_rwork <= `False_v;
+				inst_rbusy <= `False_v;
+			end
+			if (mem_rwork == `True_v) begin
+				mem_rdata <= ram_rdata;
+				mem_rwork <= `False_v;
+				mem_rbusy <= `False_v;
+			end
+			if (mem_wwork == `True_v)begin
+				mem_wwork <= `False_v;
+				mem_wbusy <= `False_v;
+			end
+		end
+	end
 
-
-
-
-
+	always @ ( * ) begin
+		if (rst == `True_v)begin
+			ram_we <= `False_v;
+			ram_re <= `False_v;
+			ram_addr <= `ZeroWord;
+			ram_wdata <= `ZeroWord;
+		end
+		else if (rdy == `True_v && ram_busy == `False_v)begin
+			if (mem_wwait == `True_v) begin
+				ram_addr <= mem_waddr;
+				ram_wdata <= mem_wdata;
+				mem_wwait = `False_v;
+			end
+			else if (mem_rwait == `True_v) begin
+				ram_addr <= mem_raddr;
+				mem_rwait = `False_v;
+			end
+			else if (inst_rwait == `True_v) begin
+				ram_re <= True_v;
+				ram_addr <= raddr_inst;
+				inst_rwait <= `False_v;
+			end
+		end
+	end
 
 
 endmodule // Memory_ctrl
