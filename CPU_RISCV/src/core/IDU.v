@@ -10,8 +10,7 @@ module IF_ID (
 	input wire[`InstBus] 		if_inst,
 	input wire[4:0] 			stall,
 
-	output reg 					use_npc,
-	output reg 					npc_addr,
+
 	output reg[`InstAddrBus]	id_pc,
 	output reg[`InstBus]		id_inst
 	);
@@ -29,7 +28,7 @@ module IF_ID (
 			else if (stall[0] == `False_v)begin
 				id_pc <= if_pc;
 				id_inst <= if_inst;
-			else
+			end
 			// $display("IF_ID:: inst:%d", if_inst);
 		end
 	end
@@ -72,6 +71,9 @@ module ID (
 	output reg 					we,
 	output reg[`RegAddrBus]		waddr,
 
+	output reg 					use_npc,
+	output reg 					npc_addr,
+
 	output reg 					stall_req
 	);
 
@@ -105,6 +107,8 @@ module ID (
 			re1 <= `False_v;
 			re2 <= `False_v;
 			imm <= `ZeroWord;
+			use_npc <= `False_v;
+			npc_addr <= `ZeroWord;
 			$display("operate: %d", inst);
 			// $display("operate: %b", inst[6:0]);
 			case(inst[6:0])

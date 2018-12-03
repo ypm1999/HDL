@@ -8,6 +8,7 @@ module MEM_WB (
 	input wire 					mem_we,
 	input wire[`RegAddrBus] 	mem_waddr,
 	input wire[`RegBus] 		mem_wdata,
+	input wire[4:0] 			stall,
 
 	output reg 					wb_we,
 	output reg[`RegAddrBus] 	wb_waddr,
@@ -45,6 +46,7 @@ module WB (
 	input wire 					we_in,
 	input wire[`RegAddrBus]		waddr_in,
 	input wire[`RegBus]			wdata_in,
+
 
 	output reg 					we_out,
 	output reg[`RegAddrBus]		waddr_out,

@@ -29,8 +29,13 @@ module cpu(
 
 //IF->IFID->ID
 wire[`RomAddrBus]	if_pc;
+wire[`InstBus]		if_inst;
 wire[`RomAddrBus]	id_pc;
 wire[`InstBus]		id_inst;
+
+//ID->IF(new pc for J and B)
+wire                use_npc;
+wire[`RomAddrBus]   npc_addr;
 
 //ID->REGFile->ID
 wire 				reg_re1;
@@ -65,7 +70,7 @@ wire[`RegAddrBus]	ex_waddr_out;
 wire[`RegBus]		ex_wdata_out;
 
   //EXMEM->MEM
-  wire 				mem_we_in;
+wire 				mem_we_in;
 wire[`RegAddrBus]	mem_waddr_in;
 wire[`RegBus]		mem_wdata_in;
 
@@ -86,7 +91,7 @@ wire[31:0]          ram_acc_rdata;
 wire[31:0]          ram_acc_wdata;
 
 //wire for ram_ctrl0 (input and output to outside)
-wire                ram_ctrl_inst__re;
+wire                ram_ctrl_inst_re;
 wire                ram_ctrl_mem_re;
 wire                ram_ctrl_mem_we;
 wire                ram_ctrl_mem_rbusy;
@@ -145,7 +150,7 @@ Memory_Ctrl ram_ctrl0(
     .inst_re(ram_ctrl_inst_re),
 	.inst_raddr(ram_ctrl_inst_raddr),
 	.inst_rdata(ram_ctrl_inst_rdata),
-	.inst_busy(ram_ctrl_inst_rbusy),
+	.inst_rbusy(ram_ctrl_inst_rbusy),
 
     .mem_re(ram_ctrl_mem_re),
     .mem_raddr(ram_ctrl_mem_raddr),
@@ -172,8 +177,17 @@ IF if0(
 	.rst(rst_in),
     .rdy(rdy_in),
 
+    .use_npc(use_npc),
+	.npc_addr(npc_addr),
+	.ram_inst(ram_ctrl_inst_rdata),
+	.ram_inst_busy(ram_ctrl_inst_rbusy),
+	.stall(stall_cmd),
+
 	.pc(if_pc),
-	.ce(rom_ce),
+	.inst(if_inst),
+	.ram_inst_re(ram_ctrl_inst_re),
+	.ram_inst_raddr(ram_ctrl_inst_raddr),
+
     .stall_req(if_stall_req)
 	);
 
@@ -185,7 +199,7 @@ IF_ID if_id0(
 	.rdy(rdy_in),
 
 	.if_pc(if_pc),
-	.if_inst(ram_ctrl_inst_rdata),
+	.if_inst(if_inst),
 
     .stall(stall_cmd),
 
@@ -209,8 +223,6 @@ ID id0(
     .mem_waddr(mem_waddr_out),
     .mem_wdata(mem_wdata_out),
 
-    .stall(stall_cmd),
-
 	.aluop(id_aluop),
 	.alusel(id_alusel),
 	.funct(id_funct),
@@ -224,6 +236,9 @@ ID id0(
 
 	.we(id_we),
 	.waddr(id_waddr),
+
+    .use_npc(use_npc),
+	.npc_addr(npc_addr),
 
     .stall_req(id_stall_req)
 	);
@@ -282,7 +297,6 @@ EX ex0(
 	.we_in(ex_we_in),
 	.waddr_in(ex_waddr_in),
 
-
 	.we(ex_we_out),
 	.waddr(ex_waddr_out),
 	.wdata(ex_wdata_out),
@@ -314,9 +328,19 @@ EX_MEM ex_mem0(
 	.waddr_in(mem_waddr_in),
 	.wdata_in(mem_wdata_in),
 
+    .ram_re(ram_ctrl_mem_re),
+    .ram_raddr(ram_ctrl_mem_raddr),
+    .ram_rdata(ram_ctrl_mem_rdata),
+    .ram_rbusy(ram_ctrl_mem_rbusy),
+
 	.we_out(mem_we_out),
 	.waddr_out(mem_waddr_out),
 	.wdata_out(mem_wdata_out),
+
+    .ram_we(ram_ctrl_mem_we),
+    .ram_waddr(ram_ctrl_mem_waddr),
+    .ram_wdata(ram_ctrl_mem_wdata),
+    .ram_wbusy(ram_ctrl_mem_wbusy),
 
     .stall_req(mem_stall_req)
     );

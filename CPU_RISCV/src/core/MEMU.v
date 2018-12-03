@@ -17,7 +17,7 @@ module EX_MEM (
 	);
 
 	always @ ( posedge clk ) begin
-		if (rst == `RstEnable)begin
+		if (rst == `RstEnable) begin
 			mem_we <= `False_v;
 			mem_waddr <= 5'b00000;
 			mem_wdata <= `ZeroWord;
@@ -47,6 +47,16 @@ module MEM (
 	input wire 					we_in,
 	input wire[`RegAddrBus]		waddr_in,
 	input wire[`RegBus]			wdata_in,
+
+	output reg 					ram_re,
+	output reg [31:0]			ram_raddr,
+	input wire [31:0]			ram_rdata,
+	input wire 					ram_rbusy,
+
+	output reg 					ram_we,
+	output reg [31:0]			ram_waddr,
+	output reg [31:0]			ram_wdata,
+	input wire 					ram_wbusy,
 
 	output reg 					we_out,
 	output reg[`RegAddrBus]		waddr_out,

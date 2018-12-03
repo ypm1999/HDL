@@ -64,7 +64,7 @@ endmodule // ID_EX
 module EX (
 	input wire 					rst,
 	input wire 					rdy,
-	
+
 	input wire[`AluOpBus] 		opcode,
 	input wire[`AluSelBus] 		alusel,
 	input wire 					funct,
