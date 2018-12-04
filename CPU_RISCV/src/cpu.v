@@ -191,8 +191,6 @@ IF if0(
     .stall_req(if_stall_req)
 	);
 
-assign mem_a = if_pc;
-
 IF_ID if_id0(
 	.clk(clk_in),
 	.rst(rst_in),

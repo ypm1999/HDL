@@ -21,14 +21,20 @@ module IF (
 	reg start, waiting;
 
 	initial begin
-		pc <= 0;
+		pc <= -4;
 		start <= `False_v;
+		waiting <= `False_v;
+		ram_inst_re <= `False_v;
+		ram_inst_raddr <= 8'hffffffff;
 	end
 
 	always @ ( posedge clk ) begin
 		if (rst == `RstEnable)begin
-			pc <= `ZeroWord;
+			pc <= -4;
+			start <= `False_v;
+			waiting <= `False_v;
 			ram_inst_re <= `False_v;
+			ram_inst_raddr <= 8'hffffffff;
 		end
 		else if(rdy == `True_v) begin
 			ram_inst_re <= `False_v;
@@ -36,37 +42,47 @@ module IF (
 				if (use_npc == `True_v)begin
 					pc <= npc_addr;
 					ram_inst_raddr <= npc_addr;
-				end
-				else if (start == `True_v)begin
-					pc <= pc + 4;
-					ram_inst_raddr <= pc + 4;
+					ram_inst_re <= `True_v;
 				end
 				else begin
-					start <= `True_v;
-					ram_inst_raddr <= pc;
+					pc <= pc + 4;
+					ram_inst_raddr <= pc + 4;
+					ram_inst_re <= `True_v;
 				end
-				waiting <= `True_v;
-				ram_inst_re <= `True_v;
 			end
 		end
 	end
 
-	always @ ( rst or ram_inst_busy ) begin
-		if (rst == `RstEnable)begin
-			stall_req <= `False_v;
-			inst <= `ZeroWord;
-		end
-		else if(rdy == `True_v && waiting == `True_v) begin
-			stall_req <= `False_v;
-			if (ram_inst_busy == `True_v)begin
-				stall_req = `True_v;
+	always @ ( ram_inst_busy ) begin
+			if (rst == `RstEnable)begin
+				stall_req <= `False_v;
 				inst <= `ZeroWord;
 			end
-			else begin
-				inst <= ram_inst;
-				waiting <= `False_v;
+			else if(rdy == `True_v) begin
+				if (ram_inst_busy == `True_v)begin
+					stall_req = `True_v;
+					inst <= `ZeroWord;
+				end
+				else begin
+					stall_req <= `False_v;
+					inst <= ram_inst;
+				end
 			end
 		end
-	end
+
+	//
+	// always @ ( negedge ram_inst_busy ) begin
+	// 	$display("negedge ram_inst_busy");
+	// 	if (rst == `RstEnable)begin
+	// 		stall_req <= `False_v;
+	// 		inst <= `ZeroWord;
+	// 	end
+	// 	else if(rdy == `True_v && waiting == `True_v) begin
+	// 		stall_req <= `False_v;
+	// 		$display("stall_req <= false ::%d", ram_inst_busy);
+	// 		inst <= ram_inst;
+	// 		waiting <= `False_v;
+	// 	end
+	// end
 
 endmodule // pc_reg

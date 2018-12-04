@@ -18,13 +18,13 @@ module Ctrl (
 			stall_cmd <= 5'b00000;
 		else if (rdy == `True_v) begin
 				if (mem_stall_req == `True_v)
-					stall_cmd <= 5'b11110;
+					stall_cmd <= 5'b01111;
 				else if (ex_stall_req == `True_v)
-					stall_cmd <= 5'b11100;
+					stall_cmd <= 5'b00111;
 				else if (id_stall_req == `True_v)
-					stall_cmd <= 5'b11000;
+					stall_cmd <= 5'b00011;
 				else if (if_stall_req == `True_v)
-					stall_cmd <= 5'b10000;
+					stall_cmd <= 5'b00001;
 				else
 					stall_cmd <= 5'b00000;
 			end
