@@ -1,13 +1,13 @@
 `include "defines.v"
 
-module MEM_WB (
+module MA_WB (
 	input wire 					clk,
 	input wire 					rst,
 	input wire 					rdy,
 
-	input wire 					mem_we,
-	input wire[`RegAddrBus] 	mem_waddr,
-	input wire[`RegBus] 		mem_wdata,
+	input wire 					ma_we,
+	input wire[`RegAddrBus] 	ma_waddr,
+	input wire[`RegBus] 		ma_wdata,
 	input wire[4:0] 			stall,
 
 	output reg 					wb_we,
@@ -28,9 +28,9 @@ module MEM_WB (
 				wb_wdata <= `ZeroWord;
 			end
 			else begin
-				wb_we <= mem_we;
-				wb_waddr <= mem_waddr;
-				wb_wdata <= mem_wdata;
+				wb_we <= ma_we;
+				wb_waddr <= ma_waddr;
+				wb_wdata <= ma_wdata;
 			end
 		end
 	end

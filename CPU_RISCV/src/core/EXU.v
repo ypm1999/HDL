@@ -12,6 +12,7 @@ module ID_EX (
 	input wire[`RegBus]			data2_id,
 	input wire 					we_id,
 	input wire[`RegAddrBus]		waddr_id,
+	input wire[`RegBus]			wdata_id,
 	input wire[4:0] 			stall,
 
 	output reg[`AluOpBus] 		opcode_ex,
@@ -20,7 +21,8 @@ module ID_EX (
 	output reg[`RegBus]			data1_ex,
 	output reg[`RegBus]			data2_ex,
 	output reg 					we_ex,
-	output reg[`RegAddrBus]		waddr_ex
+	output reg[`RegAddrBus]		waddr_ex,
+	output reg[`RegBus]			wdata_ex
 	);
 
 	always @ ( posedge clk ) begin
@@ -72,6 +74,7 @@ module EX (
 	input wire[`RegBus]			data2,
 	input wire 					we_in,
 	input wire[`RegAddrBus]		waddr_in,
+	input wire[`RegBus]			wdata_in,
 
 	output reg 					we,
 	output reg[`RegAddrBus]		waddr,
@@ -80,6 +83,46 @@ module EX (
 	output reg 					stall_req
 	);
 
+	reg [31:0] 					alu_out;
+
+	always @ ( * ) begin
+		if(rst == `RstEnable) begin
+			alu_out <= `ZeroWord;
+		end
+		else if(rdy == `True_v) begin
+			case (alusel)
+				`AND_SEL: alu_out <= data1 & data2;
+				`OR_SEL: alu_out <= data1 | data2;
+				`XOR_SEL: alu_out <= data1 ^ data2;
+				`ADD_SEL: alu_out <= data1 + data2;
+				`SLT_SEL:  begin
+					if (data1[31] && !data2[31] ||
+						data1[31] && data2[31] && ((~data1) + 1) > ((~data2) + 1) ||
+						!data1[31] && !data2[31] && data1 < data2)
+						alu_out <= data1;
+					else
+						alu_out <= `ZeroWord;
+				end
+				`SLTU_SEL: begin
+					if (data1 < data2)
+						alu_out <= data1;
+					else
+						alu_out <= `ZeroWord;
+				end
+
+				`SLL_SEL: alu_out <= data1 << data2[4:0];
+				`SRL_SEL: begin
+					if (funct == `False_v)
+						alu_out <= data1 >> data2[4:0];
+					else
+						alu_out <= (data1 >> data2[4:0]) | ({32{data1[31]}} << (6'd32-data2[4:0]));
+				end
+
+				default: alu_out <= `ZeroWord;
+			endcase
+		end
+	end
+
 	always @ ( * ) begin
 		if(rst == `RstEnable)begin
 			we <= `False_v;
@@ -87,47 +130,17 @@ module EX (
 		end
 		else if(rdy == `True_v)  begin
 			we <= we_in;
-			waddr <= waddr_in;
+			if (opcode == 7'b0000011 || opcode == 7'b0100011) begin
+				waddr <= alu_out;
+				wdata <= wdata_in;
+			end
+			else begin
+				waddr <= waddr_in;
+				wdata <= alu_out;
+			end
 			// $display("opcode:%b alusel:%b funct:%b\ndata1:%h  data2:%h\nwe:%b waddr:%d\n",
 			// 		opcode, alusel, funct, data1, data2, we_in, waddr_in);
 		end
 	end
 
-	always @ ( * ) begin
-		if(rst == `RstEnable) begin
-			wdata <= `ZeroWord;
-		end
-		else if(rdy == `True_v) begin
-			case (alusel)
-				`AND_SEL: wdata <= data1 & data2;
-				`OR_SEL: wdata <= data1 | data2;
-				`XOR_SEL: wdata <= data1 ^ data2;
-				`ADD_SEL: wdata <= data1 + data2;
-				`SLT_SEL:  begin
-					if (data1[31] && !data2[31] ||
-						data1[31] && data2[31] && ((~data1) + 1) > ((~data2) + 1) ||
-						!data1[31] && !data2[31] && data1 < data2)
-						wdata <= data1;
-					else
-						wdata <= `ZeroWord;
-				end
-				`SLTU_SEL: begin
-					if (data1 < data2)
-						wdata <= data1;
-					else
-						wdata <= `ZeroWord;
-				end
-
-				`SLL_SEL: wdata <= data1 << data2[4:0];
-				`SRL_SEL: begin
-					if (funct == `False_v)
-						wdata <= data1 >> data2[4:0];
-					else
-						wdata <= (data1 >> data2[4:0]) | ({32{data1[31]}} << (6'd32-data2[4:0]));
-				end
-
-				default: wdata <= `ZeroWord;
-			endcase
-		end
-	end
 endmodule // EX

@@ -47,6 +47,7 @@ module IF (
 				else begin
 					pc <= pc + 4;
 					ram_inst_raddr <= pc + 4;
+					waiting <= `True_v;
 					ram_inst_re <= `True_v;
 				end
 			end
@@ -58,13 +59,14 @@ module IF (
 				stall_req <= `False_v;
 				inst <= `ZeroWord;
 			end
-			else if(rdy == `True_v) begin
+			else if(rdy == `True_v && waiting == `True_v) begin
 				if (ram_inst_busy == `True_v)begin
 					stall_req = `True_v;
 					inst <= `ZeroWord;
 				end
 				else begin
 					stall_req <= `False_v;
+					waiting <= `False_v;
 					inst <= ram_inst;
 				end
 			end

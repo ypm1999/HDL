@@ -230,7 +230,7 @@ module Memory_Ctrl (
 		if (rst == `True_v)begin
 			inst_rwork <= `False_v;
 			inst_rbusy <= `False_v;
-			$display("inst_rbusy <= false  because rst at %t", $time);
+			// $display("inst_rbusy <= false  because rst at %t", $time);
 			mem_rwork <= `False_v;
 			mem_rbusy <= `False_v;
 			mem_wwork <= `False_v;
@@ -240,7 +240,7 @@ module Memory_Ctrl (
 			if (inst_rwork == `True_v) begin
 				inst_rdata <= ram_rdata;
 				inst_rwork <= `False_v;
-				$display("inst_rbusy <= false at %t", $time);
+				// $display("inst_rbusy <= false at %t", $time);
 				inst_rbusy <= `False_v;
 			end
 			else if (mem_rwork == `True_v) begin

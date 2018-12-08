@@ -8,7 +8,7 @@ module Ctrl (
 	input wire 				if_stall_req,
 	input wire 				id_stall_req,
 	input wire 				ex_stall_req,
-	input wire 				mem_stall_req,
+	input wire 				ma_stall_req,
 
 	output reg[4:0] 		stall_cmd
 	);
@@ -17,7 +17,7 @@ module Ctrl (
 		if (rst == `True_v)
 			stall_cmd <= 5'b00000;
 		else if (rdy == `True_v) begin
-				if (mem_stall_req == `True_v)
+				if (ma_stall_req == `True_v)
 					stall_cmd <= 5'b01111;
 				else if (ex_stall_req == `True_v)
 					stall_cmd <= 5'b00111;

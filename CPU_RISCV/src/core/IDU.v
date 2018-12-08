@@ -70,6 +70,7 @@ module ID (
 
 	output reg 					we,
 	output reg[`RegAddrBus]		waddr,
+	output reg[`RegBus]			wdata,
 
 	output reg 					use_npc,
 	output reg 					npc_addr,
@@ -86,11 +87,11 @@ module ID (
 			raddr2 <= 5'b00000;
 			waddr <= 5'b00000;
 			aluop <= 7'b0000000;
-			alusel <= 3'b000;
 			funct <= 1'b0;
 		end
 		else if(rdy == `True_v) begin
-			{raddr2, raddr1, alusel, waddr, aluop}	<= inst[24:0];
+			{raddr2, raddr1} <= inst[24:15];
+			{waddr, aluop} <= inst[11:0];
 			funct <= inst[30];
 		end
 	end
@@ -117,8 +118,21 @@ module ID (
 				7'b1101111 :we <= `True_v;// J
 				7'b1100111 :we <= `True_v;// I
 				7'b1100011 :we <= `True_v;// B
-				7'b0000011 :we <= `True_v;// I
-				7'b0100011 :we <= `True_v;// S
+				7'b0000011 :begin // I
+					we <= `True_v;
+					re1 <= `True_v;
+					alusel <= 3'b000;
+					if (func3[2] == 1'b1)
+						imm <= {{20{1'b0}}, inst[31:20]};
+					else
+						imm <= {{20{inst[31]}}, inst[30:20]};
+				end
+				7'b0100011 :begin// S
+					re1 <= `True_v;
+					re2 <= `True_v;
+					alusel <= 3'b000;
+					imm <= {{20{inst[31]}}, inst[30:25], inst[11:7]};
+				end
 				7'b0010011 :// I/R;
                 begin
 					if (func3 == 3'b111)
@@ -130,6 +144,7 @@ module ID (
 					we <= `True_v;
 					re1 <= `True_v;
 					re2 <= `False_v;
+					alusel <= inst[14:12];
 					if (func3 == 3'b001 || func3 == 3'b101)
 						imm <= {{27{1'b0}}, inst[24:20]};
 					else if (func3 != 3'b011)
@@ -138,9 +153,7 @@ module ID (
 						imm <= {{20{1'b0}}, inst[31:20]};
 				end
 				7'b0110011 :we <= `True_v;// R
-				default :begin
-					we <= we;
-				end
+
 			endcase
 		end
 	end
@@ -177,6 +190,17 @@ module ID (
 			else begin
 				reg2 <= imm;
 				// $display("reg2 <= imm");
+			end
+		end
+	end
+
+	always @ ( * ) begin
+		if (rst == `RstEnable)
+			wdata <= `ZeroWord;
+		else  if(rdy == `True_v) begin
+			if (inst[6:0] == 7'b0100011) begin
+				wdata <= reg1;
+				reg1 <= imm;
 			end
 		end
 	end

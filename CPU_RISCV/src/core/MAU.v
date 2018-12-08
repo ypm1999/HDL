@@ -1,7 +1,6 @@
 `include "defines.v"
 
-
-module EX_MEM (
+module EX_MA (
 	input wire 					clk,
 	input wire 					rst,
 	input wire 					rdy,
@@ -11,27 +10,27 @@ module EX_MEM (
 	input wire[`RegBus] 		ex_wdata,
 	input wire[4:0] 			stall,
 
-	output reg 					mem_we,
-	output reg[`RegAddrBus] 	mem_waddr,
-	output reg[`RegBus] 		mem_wdata
+	output reg 					ma_we,
+	output reg[`RegAddrBus] 	ma_waddr,
+	output reg[`RegBus] 		ma_wdata
 	);
 
 	always @ ( posedge clk ) begin
 		if (rst == `RstEnable) begin
-			mem_we <= `False_v;
-			mem_waddr <= 5'b00000;
-			mem_wdata <= `ZeroWord;
+			ma_we <= `False_v;
+			ma_waddr <= 5'b00000;
+			ma_wdata <= `ZeroWord;
 		end
 		else if (rdy == `True_v) begin
 			if(stall[2] == `True_v && stall[3] == `False_v)begin
-				mem_we <= `False_v;
-				mem_waddr <= 5'b00000;
-				mem_wdata <= `ZeroWord;
+				ma_we <= `False_v;
+				ma_waddr <= 5'b00000;
+				ma_wdata <= `ZeroWord;
 			end
 			else begin
-				mem_we <= ex_we;
-				mem_waddr <= ex_waddr;
-				mem_wdata <= ex_wdata;
+				ma_we <= ex_we;
+				ma_waddr <= ex_waddr;
+				ma_wdata <= ex_wdata;
 			end
 		end
 	end
@@ -40,9 +39,10 @@ endmodule // EX_MEM
 
 
 
-module MEM (
+module MA (
 	input wire 					rst,
 	input wire 					rdy,
+
 
 	input wire 					we_in,
 	input wire[`RegAddrBus]		waddr_in,
