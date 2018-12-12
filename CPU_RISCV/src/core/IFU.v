@@ -68,6 +68,8 @@ module IF (
 					stall_req <= `False_v;
 					waiting <= `False_v;
 					inst <= ram_inst;
+					if (inst[6:4] == 3'b110)
+						stall_req <= `True_v;
 				end
 			end
 		end
