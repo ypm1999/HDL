@@ -189,9 +189,9 @@ module Memory_Ctrl (
 
 	always @ ( * ) begin
 		if (rst == `True_v)begin
-			raddr_inst <= 8'hffffffff;
-			raddr_mem <= 8'hffffffff;
-			waddr_mem <= 8'hffffffff;
+			raddr_inst <= 8'hffff;
+			raddr_mem <= 8'hffff;
+			waddr_mem <= 8'hffff;
 			wdata_mem <= `ZeroWord;
 		end
 		else if (rdy == `True_v) begin
@@ -201,7 +201,7 @@ module Memory_Ctrl (
 				wwidth_mem <= mem_wwidth;
 			end
 			else begin
-				waddr_mem <= 8'hffffffff;
+				waddr_mem <= 8'hffff;
 				wdata_mem <= `ZeroWord;
 				wwidth_mem <= 3'b000;
 			end
@@ -211,22 +211,22 @@ module Memory_Ctrl (
 				rwidth_mem <= mem_rwidth;
 			end
 			else begin
-				raddr_mem <= 8'hffffffff;
+				raddr_mem <= 8'hffff;
 				rwidth_mem <= 3'b000;
 			end
 
 			if (inst_re == `True_v)
 				raddr_inst <= inst_raddr;
 			else
-				raddr_inst <= 8'hffffffff;
+				raddr_inst <= 8'hffff;
 		end
 	end
 
-
-	always @ ( posedge clk or negedge ram_busy ) begin
-		ram_we <= `False_v;
-		ram_re <= `False_v;
+	//always @ ( posedge clk, negedge ram_busy ) begin
+	always @ ( posedge clk ) begin
 		if (rst == `True_v)begin
+			ram_we <= `False_v;
+			ram_re <= `False_v;
 			ram_addr <= `ZeroWord;
 			ram_wdata <= `ZeroWord;
 			mem_rbusy <= `False_v;
@@ -236,6 +236,10 @@ module Memory_Ctrl (
 			inst_rdata <= `ZeroWord;
 		end
 		else if (rdy == `True_v && !ram_busy)begin
+			ram_we <= `False_v;
+			ram_re <= `False_v;
+			mem_rdata <= `ZeroWord;
+			inst_rdata <= `ZeroWord;
 			if(mem_wbusy)begin
 				mem_wbusy <= `False_v;
 			end
@@ -248,20 +252,20 @@ module Memory_Ctrl (
 				// $display("inst_rbusy <= false at %t", $time);
 				inst_rbusy <= `False_v;
 			end
-			if (waddr_mem != 8'hffffffff)begin
+			if (waddr_mem != 8'hffff)begin
 				ram_we <= `True_v;
 				ram_addr <= waddr_mem;
 				ram_wdata <= wdata_mem;
 				ram_width <= wwidth_mem;
 				mem_wbusy <= `True_v;
 			end
-			else if (raddr_mem != 8'hffffffff)begin
+			else if (raddr_mem != 8'hffff)begin
 				ram_re <= `True_v;
 				mem_rbusy <= `True_v;
 				ram_addr <= raddr_mem;
 				ram_width <= rwidth_mem;
 			end
-			else if (raddr_inst != 8'hffffffff)begin
+			else if (raddr_inst != 8'hffff)begin
 				ram_re <= `True_v;
 				inst_rbusy <= `True_v;
 				ram_addr <= raddr_inst;

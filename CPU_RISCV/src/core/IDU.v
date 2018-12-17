@@ -65,12 +65,16 @@ module ID (
 	output reg[`RegAddrBus]		raddr1,
 	output reg[`RegAddrBus]		raddr2,
 
-	output reg[`RegBus]			reg1,
-	output reg[`RegBus]			reg2,
+	output reg[31:0]			reg1,
+	output reg[31:0]			reg2,
 
 	output reg 					we,
-	output reg[`RegAddrBus]		waddr,
-	output reg[`RegBus]			wdata,
+	output reg[ 4:0]			waddr,
+	output reg[31:0]			extra_data,
+
+	output reg 					ma_we,
+	output reg 					ma_re,
+	output reg[ 2:0]			ma_width,
 
 	output reg 					use_npc,
 	output reg 					npc_addr,
@@ -102,6 +106,9 @@ module ID (
 			re1 <= `False_v;
 			re2 <= `False_v;
 			imm <= `ZeroWord;
+			ma_we <= `False_v;
+			ma_re <= `False_v;
+			ma_width <= 3'b000;
 		end
 		else if(rdy == `True_v)  begin
 			we <= `False_v;
@@ -122,6 +129,9 @@ module ID (
 					we <= `True_v;
 					re1 <= `True_v;
 					alusel <= 3'b000;
+					ma_re <= `True_v;
+					ma_we <= `False_v;
+					ma_width <= inst[14:12];
 					if (func3[2] == 1'b1)
 						imm <= {{20{1'b0}}, inst[31:20]};
 					else
@@ -131,6 +141,9 @@ module ID (
 					re1 <= `True_v;
 					re2 <= `True_v;
 					alusel <= 3'b000;
+					ma_we <= `True_v;
+					ma_re <= `False_v;
+					ma_width <= inst[14:12];
 					imm <= {{20{inst[31]}}, inst[30:25], inst[11:7]};
 				end
 				7'b0010011 :// I/R;
@@ -153,7 +166,15 @@ module ID (
 						imm <= {{20{1'b0}}, inst[31:20]};
 				end
 				7'b0110011 :we <= `True_v;// R
-
+				default: begin
+					we <= `False_v;
+					re1 <= `False_v;
+					re2 <= `False_v;
+					imm <= `ZeroWord;
+					ma_we <= `False_v;
+					ma_re <= `False_v;
+					ma_width <= 3'b000;
+				end
 			endcase
 		end
 	end
@@ -193,16 +214,12 @@ module ID (
 			end
 		end
 	end
-
+	
 	always @ ( * ) begin
 		if (rst == `RstEnable)
-			wdata <= `ZeroWord;
-		else  if(rdy == `True_v) begin
-			if (inst[6:0] == 7'b0100011) begin
-				wdata <= reg1;
-				reg1 <= imm;
-			end
-		end
+			extra_data = `ZeroWord;
+		else
+			extra_data = imm;
 	end
 
 endmodule // ID
