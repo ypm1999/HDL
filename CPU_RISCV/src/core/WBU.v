@@ -8,6 +8,7 @@ module MA_WB (
 	input wire 					ma_we,
 	input wire[`RegAddrBus] 	ma_waddr,
 	input wire[`RegBus] 		ma_wdata,
+	input wire[4:0] 			stall,
 
 	output reg 					wb_we,
 	output reg[`RegAddrBus] 	wb_waddr,
@@ -21,9 +22,16 @@ module MA_WB (
 			wb_wdata <= `ZeroWord;
 		end
 		else if(rdy == `True_v) begin
-			wb_we <= ma_we;
-			wb_waddr <= ma_waddr;
-			wb_wdata <= ma_wdata;
+			if(stall[3] && !stall[4]) begin
+				wb_we <= `False_v;
+				wb_waddr <= 5'b00000;
+				wb_wdata <= `ZeroWord;
+			end
+			else if (!stall[4]) begin
+				wb_we <= ma_we;
+				wb_waddr <= ma_waddr;
+				wb_wdata <= ma_wdata;
+			end
 		end
 	end
 

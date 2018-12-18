@@ -21,11 +21,9 @@ module IF_ID (
 			id_inst <= `ZeroWord;
 		end
 		else if(rdy == `True_v)begin
-			if(stall[1] == `False_v && stall[0] == `True_v)begin
-				id_pc <= `ZeroWord;
-				id_inst	 <= `ZeroWord;
-			end
-			else if (stall[0] == `False_v)begin
+			id_pc <= `ZeroWord;
+			id_inst	 <= `ZeroWord;
+			if (!stall[1])begin
 				id_pc <= if_pc;
 				id_inst <= if_inst;
 			end
@@ -117,8 +115,11 @@ module ID (
 			imm <= `ZeroWord;
 			use_npc <= `False_v;
 			npc_addr <= `ZeroWord;
-			$display("operate: %d", inst);
-			// $display("operate: %b", inst[6:0]);
+			ma_we <= `False_v;
+			ma_re <= `False_v;
+			ma_width <= 3'b000;
+			//$display("operate: %d", inst);
+			$display("opcode: %b", inst[6:0]);
 			case(inst[6:0])
 				7'b0110111 :we <= `True_v;// U
 				7'b0010111 :we <= `True_v;// U
@@ -126,12 +127,18 @@ module ID (
 				7'b1100111 :we <= `True_v;// I
 				7'b1100011 :we <= `True_v;// B
 				7'b0000011 :begin // I
+					$display("re1 & re2");
 					we <= `True_v;
 					re1 <= `True_v;
 					alusel <= 3'b000;
 					ma_re <= `True_v;
 					ma_we <= `False_v;
-					ma_width <= inst[14:12];
+					if(inst[13])
+						ma_width <= 3'b100;
+					else if (inst[12])
+						ma_width <= 3'b010;
+					else
+						ma_width <= 3'b001;
 					if (func3[2] == 1'b1)
 						imm <= {{20{1'b0}}, inst[31:20]};
 					else
@@ -143,7 +150,12 @@ module ID (
 					alusel <= 3'b000;
 					ma_we <= `True_v;
 					ma_re <= `False_v;
-					ma_width <= inst[14:12];
+					if(inst[13])
+						ma_width <= 3'b100;
+					else if (inst[12])
+						ma_width <= 3'b010;
+					else
+						ma_width <= 3'b001;
 					imm <= {{20{inst[31]}}, inst[30:25], inst[11:7]};
 				end
 				7'b0010011 :// I/R;
@@ -214,7 +226,7 @@ module ID (
 			end
 		end
 	end
-	
+
 	always @ ( * ) begin
 		if (rst == `RstEnable)
 			extra_data = `ZeroWord;

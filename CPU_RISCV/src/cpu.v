@@ -35,7 +35,7 @@ wire[`InstBus]		id_inst;
 
 //ID->IF(new pc for J and B)
 wire                use_npc;
-wire[`RomAddrBus]   npc_addr;
+wire[31:0]          npc_addr;
 
 //ID->REGFile->ID
 wire 				reg_re1;
@@ -380,12 +380,19 @@ EX_MA ex_ma0(
 
 
   MA ma0(
+	.clk(clk_in),
 	.rst(rst_in),
 	.rdy(rdy_in),
 
 	.we_in(ma_we_in),
 	.waddr_in(ma_waddr_in),
 	.wdata_in(ma_wdata_in),
+
+    .ma_we(ma_ma_we),
+	.ma_re(ma_ma_re),
+	.ma_width(ma_ma_width),
+	.ma_addr(ma_ma_addr),
+	.ma_wdata(ma_ma_wdata),
 
     .ram_re(ram_ctrl_ma_re),
     .ram_raddr(ram_ctrl_ma_raddr),
@@ -416,6 +423,7 @@ MA_WB ma_wb0(
 	.ma_we(ma_we_out),
 	.ma_waddr(ma_waddr_out),
 	.ma_wdata(ma_wdata_out),
+    .stall(stall_cmd),
 
 	.wb_we(wb_we_in),
 	.wb_waddr(wb_waddr_in),

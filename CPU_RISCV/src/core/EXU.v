@@ -13,9 +13,9 @@ module ID_EX (
 	input wire 					id_we,
 	input wire[`RegAddrBus]		id_waddr,
 	input wire[`RegBus]			id_extra_data,
-	output reg 					id_ma_we,
-	output reg 					id_ma_re,
-	output reg[ 2:0]			id_ma_width,
+	input wire 					id_ma_we,
+	input wire 					id_ma_re,
+	input wire[ 2:0]			id_ma_width,
 	input wire[4:0] 			stall,
 
 	output reg[`AluOpBus] 		ex_opcode,
@@ -54,7 +54,7 @@ module ID_EX (
 				ex_we <= `False_v;
 				ex_waddr <= `ZeroWord;
 			end
-			else begin
+			else if(!stall[2]) begin
 				ex_opcode <= id_opcode;
 				ex_alusel <= id_alusel;
 				ex_funct <= id_funct;
@@ -91,7 +91,7 @@ module EX (
 
 	input wire 					ma_we_in,
 	input wire 					ma_re_in,
-	input wire[ 3:0]			ma_width_in,
+	input wire[ 2:0]			ma_width_in,
 
 	output reg 					we,
 	output reg[`RegAddrBus]		waddr,
@@ -114,8 +114,8 @@ module EX (
 			data2 <= `ZeroWord;
 		end
 		else if(rdy == `True_v) begin
-			if (ma_we_in | ma_re_in) begin
-				data1 <= reg2_in;
+			if (ma_we_in) begin
+				data1 <= reg1_in;
 				data2 <= extra_data_in;
 			end
 			else begin
@@ -135,7 +135,7 @@ module EX (
 				`OR_SEL: alu_out <= data1 | data2;
 				`XOR_SEL: alu_out <= data1 ^ data2;
 				`ADD_SEL: alu_out <= data1 + data2;
-				`SLT_SEL:  begin
+				`SLT_SEL: begin
 					if (data1[31] && !data2[31] ||
 						data1[31] && data2[31] && ((~data1) + 1) > ((~data2) + 1) ||
 						!data1[31] && !data2[31] && data1 < data2)
@@ -180,9 +180,11 @@ module EX (
 			ma_we <= ma_we_in;
 			ma_re <= ma_re_in;
 			ma_width <= ma_width_in;
+			$display("update ma_addr");
 			if (ma_we_in | ma_re_in) begin
+				$display("ma_addr get");
 				ma_addr <= alu_out;
-				ma_wdata <= reg1_in;
+				ma_wdata <= reg2_in;
 			end
 			else begin
 				ma_addr <= `ZeroWord;

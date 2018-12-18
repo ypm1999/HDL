@@ -11,7 +11,7 @@ module IF (
 	input wire 				ram_inst_busy,
 	input wire[4:0] 		stall,
 
-	output reg[`RomAddrBus] pc,
+	output reg[31:0] 		pc,
 	output reg[31:0]		inst,
 	output reg 				ram_inst_re,
 	output reg[31:0]		ram_inst_raddr,
@@ -25,7 +25,7 @@ module IF (
 		if (rst == `RstEnable)begin
 			pc <= -4;
 			ram_inst_re <= `False_v;
-			ram_inst_raddr <= 32'hffff;
+			ram_inst_raddr <= 32'hffffffff;
 		end
 		else if(rdy == `True_v) begin
 			if (stall[0] == `False_v) begin
@@ -45,7 +45,7 @@ module IF (
 		end
 	end
 
-	always @ ( ram_inst_busy) begin
+	always @ ( * ) begin
 			if (rst == `RstEnable)begin
 				stall_req <= `False_v;
 				inst <= `ZeroWord;
@@ -57,6 +57,7 @@ module IF (
 				end
 				else begin
 					stall_req <= `False_v;
+					ram_inst_re <= `False_v;
 					inst <= ram_inst;
 				end
 			end
@@ -67,21 +68,6 @@ module IF (
 	// 		bj_stall <= `True_v;
 	// 	else
 	// 		bj_stall <= `False_v;
-	// end
-
-	//
-	// always @ ( negedge ram_inst_busy ) begin
-	// 	$display("negedge ram_inst_busy");
-	// 	if (rst == `RstEnable)begin
-	// 		stall_req <= `False_v;
-	// 		inst <= `ZeroWord;
-	// 	end
-	// 	else if(rdy == `True_v && waiting == `True_v) begin
-	// 		stall_req <= `False_v;
-	// 		$display("stall_req <= false ::%d", ram_inst_busy);
-	// 		inst <= ram_inst;
-	// 		waiting <= `False_v;
-	// 	end
 	// end
 
 endmodule // pc_reg

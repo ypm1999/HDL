@@ -31,14 +31,19 @@ module EX_MA (
 			ma_we <= `False_v;
 			ma_waddr <= 5'b00000;
 			ma_wdata <= `ZeroWord;
+			ma_ma_we <= `False_v;
+			ma_ma_re <= `False_v;
+			ma_ma_width <= 3'b000;
+			ma_ma_addr <= `ZeroWord;
+			ma_ma_wdata <= `ZeroWord;
 		end
 		else if (rdy == `True_v) begin
-			if(stall[2] == `True_v && stall[3] == `False_v)begin
-				ma_we <= `False_v;
-				ma_waddr <= 5'b00000;
-				ma_wdata <= `ZeroWord;
-			end
-			else begin
+			ma_ma_we <= `False_v;
+			ma_ma_re <= `False_v;
+			ma_ma_width <= 3'b000;
+			ma_ma_addr <= `ZeroWord;
+			ma_ma_wdata <= `ZeroWord;
+			if(!stall[3]) begin
 				ma_we <= ex_we;
 				ma_waddr <= ex_waddr;
 				ma_wdata <= ex_wdata;
@@ -56,9 +61,9 @@ endmodule // EX_MEM
 
 
 module MA (
+	input wire 					clk,
 	input wire 					rst,
 	input wire 					rdy,
-
 
 	input wire 					we_in,
 	input wire[`RegAddrBus]		waddr_in,
@@ -88,8 +93,6 @@ module MA (
 	output reg 					stall_req
 	);
 
-	reg 		rwork, wwork;
-
 	always @ ( * ) begin
 		if (rst)begin
 			ram_we <= `False_v;
@@ -97,26 +100,22 @@ module MA (
 			ram_waddr <= `ZeroWord;
 			ram_wwidth <= 3'b000;
 			ram_rwidth <= 3'b000;
-			wwork = `False_v;
-			rwork = `False_v;
 		end
 		else if(rdy) begin
-			wwork = `False_v;
-			rwork = `False_v;
 			if (ma_we) begin
 				ram_we <= `True_v;
 				ram_re <= `False_v;
 				ram_waddr <= ma_addr;
 				ram_wwidth <= ma_width;
 				ram_wdata <= ma_wdata;
-				wwork = `True_v;
+				stall_req <= `True_v;
 			end
 			else if (ma_re) begin
 				ram_we <= `False_v;
 				ram_re <= `True_v;
 				ram_raddr <= ma_addr;
 				ram_rwidth <= ma_width;
-				rwork = `True_v;
+				stall_req <= `True_v;
 			end
 			else begin
 				ram_re <= `False_v;
@@ -125,31 +124,20 @@ module MA (
 		end
 	end
 
-	always @ ( * ) begin
+	always @ ( negedge clk ) begin
 		if (rst == `RstEnable)begin
 			we_out <= `False_v;
 			waddr_out <= 5'b00000;
 			wdata_out <= 32'h00000000;
 		end
 		else if(rdy == `True_v) begin
+			$display("run");
 			we_out <= we_in;
 			waddr_out <= waddr_in;
 			wdata_out <= wdata_in;
-			if (ma_we) begin
-				if(ram_wbusy | wwork)
-					stall_req <= `True_v;
-				else
-					stall_req <= `False_v;
-				wwork <= `False_v;
-			end
-			else if (ma_re) begin
-				if(ram_rbusy | rwork)
-					stall_req <= `True_v;
-				else begin
-					stall_req <= `False_v;
-					wdata_out <= ram_rdata;
-				end
-				rwork <= `False_v;
+			if(stall_req & !(ram_rbusy | ram_wbusy)) begin
+				stall_req <= `False_v;
+				wdata_out <= ram_rdata;
 			end
 		end
 	end

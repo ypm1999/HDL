@@ -184,14 +184,14 @@ module Memory_Ctrl (
 
 	reg [31:0] 	raddr_inst, raddr_mem, waddr_mem, wdata_mem;
 	reg [ 2:0] 	wwidth_mem, rwidth_mem;
-	reg 		mem_wdone, mem_rdone, inst_rdone;
+	reg 		mem_wwork, mem_rwork, inst_rwork;
 
 
 	always @ ( * ) begin
 		if (rst == `True_v)begin
-			raddr_inst <= 8'hffff;
-			raddr_mem <= 8'hffff;
-			waddr_mem <= 8'hffff;
+			raddr_inst <= 32'hffffffff;
+			raddr_mem <= 32'hffffffff;
+			waddr_mem <= 32'hffffffff;
 			wdata_mem <= `ZeroWord;
 		end
 		else if (rdy == `True_v) begin
@@ -199,26 +199,30 @@ module Memory_Ctrl (
 				wdata_mem <= mem_wdata;
 				waddr_mem <= mem_waddr;
 				wwidth_mem <= mem_wwidth;
+				mem_wbusy <= `True_v;
 			end
-			else begin
-				waddr_mem <= 8'hffff;
-				wdata_mem <= `ZeroWord;
-				wwidth_mem <= 3'b000;
-			end
+			// else begin
+			// 	waddr_mem <= 32'hffffffff;
+			// 	wdata_mem <= `ZeroWord;
+			// 	wwidth_mem <= 3'b000;
+			// end
 
 			if (mem_re == `True_v)begin
 				raddr_mem <= mem_raddr;
 				rwidth_mem <= mem_rwidth;
+				mem_rbusy <= `True_v;
 			end
-			else begin
-				raddr_mem <= 8'hffff;
-				rwidth_mem <= 3'b000;
-			end
+			// else begin
+			// 	raddr_mem <= 32'hffffffff;
+			// 	rwidth_mem <= 3'b000;
+			// end
 
-			if (inst_re == `True_v)
+			if (inst_re == `True_v)begin
 				raddr_inst <= inst_raddr;
-			else
-				raddr_inst <= 8'hffff;
+				inst_rbusy <= `True_v;
+			end
+			// else
+			// 	raddr_inst <= 32'hffffffff;
 		end
 	end
 
@@ -229,47 +233,55 @@ module Memory_Ctrl (
 			ram_re <= `False_v;
 			ram_addr <= `ZeroWord;
 			ram_wdata <= `ZeroWord;
+			mem_rwork <= `False_v;
+			mem_wwork <= `False_v;
+			inst_rwork <= `False_v;
 			mem_rbusy <= `False_v;
 			mem_wbusy <= `False_v;
 			inst_rbusy <= `False_v;
 			mem_rdata <= `ZeroWord;
 			inst_rdata <= `ZeroWord;
 		end
-		else if (rdy == `True_v && !ram_busy)begin
-			ram_we <= `False_v;
-			ram_re <= `False_v;
-			mem_rdata <= `ZeroWord;
-			inst_rdata <= `ZeroWord;
-			if(mem_wbusy)begin
-				mem_wbusy <= `False_v;
-			end
-			else if (mem_rbusy) begin
-				mem_rdata <= ram_rdata;
-				mem_rbusy <= `False_v;
-			end
-			else if (inst_rbusy) begin
-				inst_rdata <= ram_rdata;
-				// $display("inst_rbusy <= false at %t", $time);
-				inst_rbusy <= `False_v;
-			end
-			if (waddr_mem != 8'hffff)begin
-				ram_we <= `True_v;
-				ram_addr <= waddr_mem;
-				ram_wdata <= wdata_mem;
-				ram_width <= wwidth_mem;
-				mem_wbusy <= `True_v;
-			end
-			else if (raddr_mem != 8'hffff)begin
-				ram_re <= `True_v;
-				mem_rbusy <= `True_v;
-				ram_addr <= raddr_mem;
-				ram_width <= rwidth_mem;
-			end
-			else if (raddr_inst != 8'hffff)begin
-				ram_re <= `True_v;
-				inst_rbusy <= `True_v;
-				ram_addr <= raddr_inst;
-				ram_width <= 3'b100;
+		else if (rdy == `True_v)begin
+			if (!ram_busy) begin
+				ram_we <= `False_v;
+				ram_re <= `False_v;
+				mem_rdata <= `ZeroWord;
+				inst_rdata <= `ZeroWord;
+				if(mem_wwork)begin
+					mem_wbusy <= `False_v;
+					mem_wwork <= `False_v;
+				end
+				else if (mem_rwork) begin
+					mem_rdata <= ram_rdata;
+					mem_rbusy <= `False_v;
+					mem_rwork <= `False_v;
+				end
+				else if (inst_rwork) begin
+					inst_rdata <= ram_rdata;
+					// $display("inst_rbusy <= false at %t", $time);
+					inst_rbusy <= `False_v;
+					inst_rwork <= `False_v;
+				end
+				else if (mem_wbusy)begin
+					ram_we <= `True_v;
+					ram_addr <= waddr_mem;
+					ram_wdata <= wdata_mem;
+					ram_width <= wwidth_mem;
+					mem_rwork <= `True_v;
+				end
+				else if (mem_rbusy)begin
+					ram_re <= `True_v;
+					mem_rwork <= `True_v;
+					ram_addr <= raddr_mem;
+					ram_width <= rwidth_mem;
+				end
+				else if (inst_rbusy)begin
+					ram_re <= `True_v;
+					inst_rwork <= `True_v;
+					ram_addr <= raddr_inst;
+					ram_width <= 3'b100;
+				end
 			end
 		end
 	end
