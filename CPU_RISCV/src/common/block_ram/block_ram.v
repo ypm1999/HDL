@@ -1,3 +1,4 @@
+`timescale 1ps/1ps
 /***************************************************************************************************
 *
 *  Copyright (c) 2012, Brian Bennett
@@ -59,6 +60,7 @@ assign dout_b = ram[q_addr_b];
 endmodule
 
 // Single port RAM with synchronous read.
+
 module single_port_ram_sync
 #(
   parameter ADDR_WIDTH = 6,
@@ -79,7 +81,7 @@ always @(posedge clk)
   begin
     if (we)
         ram[addr_a] <= din_a;
-    q_addr_a <= addr_a;
+     q_addr_a <= addr_a;
   end
 
 assign dout_a = ram[q_addr_a];

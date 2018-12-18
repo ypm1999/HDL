@@ -38,11 +38,6 @@ module EX_MA (
 			ma_ma_wdata <= `ZeroWord;
 		end
 		else if (rdy == `True_v) begin
-			ma_ma_we <= `False_v;
-			ma_ma_re <= `False_v;
-			ma_ma_width <= 3'b000;
-			ma_ma_addr <= `ZeroWord;
-			ma_ma_wdata <= `ZeroWord;
 			if(!stall[3]) begin
 				ma_we <= ex_we;
 				ma_waddr <= ex_waddr;
@@ -75,17 +70,13 @@ module MA (
 	input wire[31:0]			ma_addr,
 	input wire[31:0]			ma_wdata,
 
-	output reg 					ram_re,
-	output reg [31:0]			ram_raddr,
-	output reg [2:0] 			ram_rwidth,
-	input wire [31:0]			ram_rdata,
-	input wire 					ram_rbusy,
-
 	output reg 					ram_we,
-	output reg [31:0]			ram_waddr,
-	output reg [2:0] 			ram_wwidth,
+	output reg 					ram_re,
+	output reg [31:0]			ram_addr,
+	output reg [2:0] 			ram_width,
+	input wire [31:0]			ram_rdata,
 	output reg [31:0]			ram_wdata,
-	input wire 					ram_wbusy,
+	input wire 					ram_busy,
 
 	output reg 					we_out,
 	output reg[`RegAddrBus]		waddr_out,
@@ -93,52 +84,74 @@ module MA (
 	output reg 					stall_req
 	);
 
-	always @ ( * ) begin
+	reg 		try_stall, rst_stall;
+
+	always @ ( rst or rdy or ma_we or ma_re or ma_addr or ma_width or ma_wdata) begin
 		if (rst)begin
 			ram_we <= `False_v;
 			ram_re <= `False_v;
-			ram_waddr <= `ZeroWord;
-			ram_wwidth <= 3'b000;
-			ram_rwidth <= 3'b000;
+			ram_addr <= `ZeroWord;
+			ram_width <= 3'b000;
+			ram_wdata <= `ZeroWord;
+			try_stall <= `False_v;
 		end
 		else if(rdy) begin
 			if (ma_we) begin
 				ram_we <= `True_v;
 				ram_re <= `False_v;
-				ram_waddr <= ma_addr;
-				ram_wwidth <= ma_width;
+				ram_addr <= ma_addr;
+				ram_width <= ma_width;
 				ram_wdata <= ma_wdata;
-				stall_req <= `True_v;
+				try_stall <= ~try_stall;
 			end
 			else if (ma_re) begin
 				ram_we <= `False_v;
 				ram_re <= `True_v;
-				ram_raddr <= ma_addr;
-				ram_rwidth <= ma_width;
-				stall_req <= `True_v;
+				ram_addr <= ma_addr;
+				ram_width <= ma_width;
+				try_stall <= ~try_stall;
 			end
 			else begin
-				ram_re <= `False_v;
 				ram_we <= `False_v;
+				ram_re <= `False_v;
+				ram_addr <= `ZeroWord;
+				ram_width <= 3'b000;
+				ram_wdata <= 3'b000;
 			end
 		end
 	end
 
-	always @ ( negedge clk ) begin
+	always @ ( rst or ram_busy ) begin
+		if (rst)begin
+			rst_stall <= `False_v;
+		end
+		else if(rdy) begin
+			if( (ma_we | ma_re) & !ram_busy )
+				rst_stall <= ~rst_stall;
+		end
+	end
+
+	always @ ( * ) begin
+		if (rst)
+			stall_req <= `False_v;
+		else if (rdy) begin
+			stall_req <= try_stall ^ rst_stall;
+		end
+	end
+
+	always @ ( * ) begin
 		if (rst == `RstEnable)begin
 			we_out <= `False_v;
 			waddr_out <= 5'b00000;
 			wdata_out <= 32'h00000000;
 		end
 		else if(rdy == `True_v) begin
-			$display("run");
 			we_out <= we_in;
 			waddr_out <= waddr_in;
-			wdata_out <= wdata_in;
-			if(stall_req & !(ram_rbusy | ram_wbusy)) begin
-				stall_req <= `False_v;
+			if(ma_re)
 				wdata_out <= ram_rdata;
-			end
+			else
+				wdata_out <= wdata_in;
 		end
 	end
 

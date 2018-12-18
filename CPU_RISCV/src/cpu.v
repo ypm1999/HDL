@@ -102,30 +102,26 @@ wire[`RegAddrBus]	wb_waddr_in;
 wire[`RegBus]		wb_wdata_in;
 
 //wire for ram_accesser0 (input & output)
-wire                ram_acc_clk;
 wire                ram_acc_re;
 wire                ram_acc_we;
-wire                ram_acc_busy;
 wire[ 2:0]          ram_acc_width;
 wire[31:0]          ram_acc_addr;
 wire[31:0]          ram_acc_rdata;
 wire[31:0]          ram_acc_wdata;
+wire                ram_acc_busy;
 
 //wire for ram_ctrl0 (input and output to outside)
 wire                ram_ctrl_inst_re;
+wire[31:0]          ram_ctrl_inst_addr;
+wire[31:0]          ram_ctrl_inst_data;
+wire                ram_ctrl_inst_busy;
 wire                ram_ctrl_ma_re;
 wire                ram_ctrl_ma_we;
-wire                ram_ctrl_ma_rbusy;
-wire                ram_ctrl_inst_busy;
-wire                ram_ctrl_ma_wbusy;
-wire[ 2:0]          ram_ctrl_ma_wwidth;
-wire[ 2:0]          ram_ctrl_ma_rwidth;
-wire[31:0]          ram_ctrl_inst_raddr;
-wire[31:0]          ram_ctrl_inst_rdata;
-wire[31:0]          ram_ctrl_ma_raddr;
+wire[31:0]          ram_ctrl_ma_addr;
+wire[ 2:0]          ram_ctrl_ma_width;
 wire[31:0]          ram_ctrl_ma_rdata;
-wire[31:0]          ram_ctrl_ma_waddr;
 wire[31:0]          ram_ctrl_ma_wdata;
+wire                ram_ctrl_ma_busy;
 //Ctrl lines
 wire[4:0]           stall_cmd;
 wire 				if_stall_req;
@@ -156,13 +152,12 @@ Memory_Accesser ram_accesser0(
     .mem_a(mem_a),
     .mem_wr(mem_wr),
 
-    .clr(ram_acc_clr),
     .re(ram_acc_re),
     .we(ram_acc_we),
     .width(ram_acc_width),
-    .mem_addr(ram_acc_addr),
-    .mem_wdata(ram_acc_wdata),
-    .mem_rdata(ram_acc_rdata),
+    .ram_addr(ram_acc_addr),
+    .ram_wdata(ram_acc_wdata),
+    .ram_rdata(ram_acc_rdata),
     .busy(ram_acc_busy)
     );
 
@@ -172,21 +167,17 @@ Memory_Ctrl ram_ctrl0(
     .rdy(rdy_in),
 
     .inst_re(ram_ctrl_inst_re),
-	.inst_raddr(ram_ctrl_inst_raddr),
-	.inst_rdata(ram_ctrl_inst_rdata),
-	.inst_rbusy(ram_ctrl_inst_rbusy),
-
-    .mem_re(ram_ctrl_ma_re),
-    .mem_raddr(ram_ctrl_ma_raddr),
-    .mem_rdata(ram_ctrl_ma_rdata),
-    .mem_rbusy(ram_ctrl_ma_rbusy),
-    .mem_rwidth(ram_ctrl_ma_rwidth),
+	.inst_addr(ram_ctrl_inst_addr),
+	.inst_data(ram_ctrl_inst_data),
+	.inst_busy(ram_ctrl_inst_busy),
 
     .mem_we(ram_ctrl_ma_we),
-    .mem_waddr(ram_ctrl_ma_waddr),
+    .mem_re(ram_ctrl_ma_re),
+    .mem_addr(ram_ctrl_ma_addr),
+    .mem_width(ram_ctrl_ma_width),
     .mem_wdata(ram_ctrl_ma_wdata),
-    .mem_wbusy(ram_ctrl_ma_wbusy),
-    .mem_wwidth(ram_ctrl_ma_wwidth),
+    .mem_rdata(ram_ctrl_ma_rdata),
+    .mem_busy(ram_ctrl_ma_busy),
 
     .ram_busy(ram_acc_busy),
     .ram_rdata(ram_acc_rdata),
@@ -205,14 +196,14 @@ IF if0(
 
     .use_npc(use_npc),
 	.npc_addr(npc_addr),
-	.ram_inst(ram_ctrl_inst_rdata),
-	.ram_inst_busy(ram_ctrl_inst_rbusy),
+	.ram_inst(ram_ctrl_inst_data),
+	.ram_inst_busy(ram_ctrl_inst_busy),
 	.stall(stall_cmd),
 
 	.pc(if_pc),
 	.inst(if_inst),
 	.ram_inst_re(ram_ctrl_inst_re),
-	.ram_inst_raddr(ram_ctrl_inst_raddr),
+	.ram_inst_addr(ram_ctrl_inst_addr),
 
     .stall_req(if_stall_req)
 	);
@@ -394,21 +385,17 @@ EX_MA ex_ma0(
 	.ma_addr(ma_ma_addr),
 	.ma_wdata(ma_ma_wdata),
 
+    .ram_we(ram_ctrl_ma_we),
     .ram_re(ram_ctrl_ma_re),
-    .ram_raddr(ram_ctrl_ma_raddr),
-    .ram_rwidth(ram_ctrl_ma_rwidth),
+    .ram_addr(ram_ctrl_ma_addr),
+    .ram_width(ram_ctrl_ma_width),
     .ram_rdata(ram_ctrl_ma_rdata),
-    .ram_rbusy(ram_ctrl_ma_rbusy),
+    .ram_wdata(ram_ctrl_ma_wdata),
+    .ram_busy(ram_ctrl_ma_busy),
 
-	.we_out(ma_we_out),
+    .we_out(ma_we_out),
 	.waddr_out(ma_waddr_out),
 	.wdata_out(ma_wdata_out),
-
-    .ram_we(ram_ctrl_ma_we),
-    .ram_waddr(ram_ctrl_ma_waddr),
-    .ram_wwidth(ram_ctrl_ma_wwidth),
-    .ram_wdata(ram_ctrl_ma_wdata),
-    .ram_wbusy(ram_ctrl_ma_wbusy),
 
     .stall_req(ma_stall_req)
     );

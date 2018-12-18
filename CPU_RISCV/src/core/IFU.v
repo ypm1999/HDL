@@ -14,52 +14,64 @@ module IF (
 	output reg[31:0] 		pc,
 	output reg[31:0]		inst,
 	output reg 				ram_inst_re,
-	output reg[31:0]		ram_inst_raddr,
+	output reg[31:0]		ram_inst_addr,
 
 	output reg 				stall_req
 	);
-	reg bj_stall, reset_bj;
+	reg 		bj_stall, reset_bj;
+	reg 		try_stall, rst_stall;
 
 
 	always @ ( posedge clk ) begin
 		if (rst == `RstEnable)begin
 			pc <= -4;
 			ram_inst_re <= `False_v;
-			ram_inst_raddr <= 32'hffffffff;
+			ram_inst_addr <= 32'hffffffff;
+			try_stall <= `False_v;
 		end
 		else if(rdy == `True_v) begin
 			if (stall[0] == `False_v) begin
-				if (ram_inst_re)
-					ram_inst_re <= `False_v;
-				else if (use_npc) begin
+				ram_inst_re <= `False_v;
+				if (use_npc) begin
 					pc <= npc_addr;
-					ram_inst_raddr <= npc_addr;
+					ram_inst_addr <= npc_addr;
 					ram_inst_re <= `True_v;
+					try_stall <= ~try_stall;
 				end
 				else begin
 					pc <= pc + 4;
-					ram_inst_raddr <= pc + 4;
+					ram_inst_addr <= pc + 4;
 					ram_inst_re <= `True_v;
+					try_stall <= ~try_stall;
 				end
+				$display("::%h", pc);
 			end
+			else $display("%h", pc);
 		end
 	end
 
-	always @ ( * ) begin
-			if (rst == `RstEnable)begin
-				stall_req <= `False_v;
+	always @ ( rst or ram_inst_busy ) begin
+			if (rst) begin
+				rst_stall <= `False_v;
 				inst <= `ZeroWord;
 			end
 			else if(rdy == `True_v) begin
-				if (ram_inst_busy)begin
-					stall_req = `True_v;
-					inst <= `ZeroWord;
-				end
-				else begin
-					stall_req <= `False_v;
-					ram_inst_re <= `False_v;
+				if (ram_inst_re & !ram_inst_busy)begin
+					rst_stall <= ~rst_stall;
 					inst <= ram_inst;
 				end
+				else begin
+					inst <= `ZeroWord;
+				end
+			end
+		end
+
+		always @ ( * ) begin
+			if (rst)
+				stall_req <= `False_v;
+			else if (rdy) begin
+				stall_req <= try_stall ^ rst_stall;
+				$display("::%b", try_stall ^ rst_stall);
 			end
 		end
 
