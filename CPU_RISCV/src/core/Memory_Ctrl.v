@@ -38,6 +38,7 @@ module Memory_Accesser (
 			case(sta)
 				//wait status
 				4'b0000:begin
+					mem_wr <= 1'b0;
 					if (re) begin
 						cnt <= width;
 						mem_a <= ram_addr;
@@ -166,7 +167,6 @@ module Memory_Ctrl (
 	reg [ 2:0] 	sta;
 	reg 		mem_work, inst_work;
 
-
 	always @ ( posedge clk ) begin
 		if (rst == `True_v)begin
 			ram_we <= `False_v;
@@ -219,13 +219,13 @@ module Memory_Ctrl (
 					ram_re <= `False_v;
 					mem_rdata <= `ZeroWord;
 					inst_data <= `ZeroWord;
-					if (!ram_busy) begin
-						if (mem_busy) begin
+					if (ram_busy == `False_v) begin
+						if (mem_busy == `True_v) begin
 							mem_busy <= `False_v;
-							if(mem_re)
+							if(mem_re == `True_v)
 								mem_rdata <= ram_rdata;
 						end
-						else if(inst_busy) begin
+						else if(inst_busy == `True_v) begin
 							inst_busy <= `False_v;
 							inst_data <= ram_rdata;
 						end

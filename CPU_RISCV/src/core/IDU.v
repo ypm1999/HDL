@@ -21,9 +21,11 @@ module IF_ID (
 			id_inst <= `ZeroWord;
 		end
 		else if(rdy == `True_v)begin
-			id_pc <= `ZeroWord;
-			id_inst	 <= `ZeroWord;
-			if (!stall[1])begin
+			if (stall[0] & !stall[1]) begin
+				id_pc <= `ZeroWord;
+				id_inst	 <= `ZeroWord;
+			end
+			else if (!stall[1])begin
 				id_pc <= if_pc;
 				id_inst <= if_inst;
 			end
@@ -45,17 +47,15 @@ module ID (
 	input wire[`RegBus]			rdata1,
 	input wire[`RegBus]			rdata2,
 
-	input wire 					ex_we,
-	input wire[`RegAddrBus]		ex_waddr,
-	input wire[`RegBus]			ex_wdata,
-
-	input wire 					mem_we,
-	input wire[`RegAddrBus]		mem_waddr,
-	input wire[`RegBus]			mem_wdata,
+	input wire 					fwd_ex_we,
+	input wire[`RegAddrBus]		fwd_ex_waddr,
+	input wire[`RegBus]			fwd_ex_wdata,
+	input wire 					fwd_ma_we,
+	input wire[4:0]				fwd_ma_waddr,
+	input wire[31:0]			fwd_ma_wdata,
 
 	output reg[`AluOpBus] 		aluop,
 	output reg[`AluSelBus] 		alusel,
-
 	output reg					funct,
 
 	output reg 					re1,
@@ -75,7 +75,7 @@ module ID (
 	output reg[ 2:0]			ma_width,
 
 	output reg 					use_npc,
-	output reg 					npc_addr,
+	output reg[31:0]			npc_addr,
 
 	output reg 					stall_req
 	);
@@ -183,6 +183,7 @@ module ID (
 					re1 <= `False_v;
 					re2 <= `False_v;
 					imm <= `ZeroWord;
+					alusel <= 3'b000;
 					ma_we <= `False_v;
 					ma_re <= `False_v;
 					ma_width <= 3'b000;
@@ -196,10 +197,10 @@ module ID (
 			reg1 <= `ZeroWord;
 		else if(rdy == `True_v) begin
 			if (re1 == `True_v) begin
-				if (ex_we == `True_v && ex_waddr == raddr1)
-					reg1 <= ex_wdata;
-				else if(mem_we == `True_v && mem_waddr == raddr1)
-					reg1 <= mem_wdata;
+				if (fwd_ex_we == `True_v && fwd_ex_waddr == raddr1)
+					reg1 <= fwd_ex_wdata;
+				else if(fwd_ma_we == `True_v && fwd_ma_waddr == raddr1)
+					reg1 <= fwd_ma_wdata;
 				else
 					reg1 <= rdata1;
 			end
@@ -213,10 +214,10 @@ module ID (
 			reg2 <= `ZeroWord;
 		else  if(rdy == `True_v) begin
 			if (re2 == `True_v)begin
-				if (ex_we == `True_v && ex_waddr == raddr2)
-					reg2 <= ex_wdata;
-				else if(mem_we == `True_v && mem_waddr == raddr2)
-					reg2 <= mem_wdata;
+				if (fwd_ex_we == `True_v && fwd_ex_waddr == raddr2)
+					reg2 <= fwd_ex_wdata;
+				else if(fwd_ma_we == `True_v && fwd_ma_waddr == raddr2)
+					reg2 <= fwd_ma_wdata;
 				else
 					reg2 <= rdata2;
 			end

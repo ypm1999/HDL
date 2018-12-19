@@ -228,15 +228,16 @@ ID id0(
 
 	.pc(id_pc),
 	.inst(id_inst),
+
 	.rdata1(reg_data1),
 	.rdata2(reg_data2),
 
-    .ex_we(ex_we_out),
-    .ex_waddr(ex_waddr_out),
-    .ex_wdata(ex_wdata_out),
-    .mem_we(mem_we_out),
-    .mem_waddr(mem_waddr_out),
-    .mem_wdata(mem_wdata_out),
+    .fwd_ex_we(ex_we_out),
+    .fwd_ex_waddr(ex_waddr_out),
+    .fwd_ex_wdata(ex_wdata_out),
+    .fwd_ma_we(ma_we_out),
+    .fwd_ma_waddr(ma_waddr_out),
+    .fwd_ma_wdata(ma_wdata_out),
 
 	.aluop(id_aluop),
 	.alusel(id_alusel),
@@ -246,6 +247,7 @@ ID id0(
 	.re2(reg_re2),
 	.raddr1(reg_raddr1),
 	.raddr2(reg_raddr2),
+
 	.reg1(id_data1),
 	.reg2(id_data2),
 
@@ -293,12 +295,12 @@ ID_EX id_ex0(
 	.id_funct(id_funct),
 	.id_data1(id_data1),
 	.id_data2(id_data2),
+    .id_extra_data(id_extra_data),
 	.id_we(id_we),
 	.id_waddr(id_waddr),
     .id_ma_we(id_ma_we),
     .id_ma_re(id_ma_re),
     .id_ma_width(id_ma_width),
-    .id_extra_data(id_extra_data),
     .stall(stall_cmd),
 
 	.ex_opcode(ex_aluop),
@@ -306,9 +308,9 @@ ID_EX id_ex0(
 	.ex_funct(ex_funct),
 	.ex_data1(ex_data1),
 	.ex_data2(ex_data2),
+    .ex_extra_data(ex_extra_data),
 	.ex_we(ex_we_in),
 	.ex_waddr(ex_waddr_in),
-    .ex_extra_data(ex_extra_data),
     .ex_ma_we(ex_ma_we_in),
     .ex_ma_re(ex_ma_re_in),
     .ex_ma_width(ex_ma_width_in)

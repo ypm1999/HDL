@@ -10,9 +10,9 @@ module ID_EX (
 	input wire 					id_funct,
 	input wire[`RegBus]			id_data1,
 	input wire[`RegBus]			id_data2,
+	input wire[`RegBus]			id_extra_data,
 	input wire 					id_we,
 	input wire[`RegAddrBus]		id_waddr,
-	input wire[`RegBus]			id_extra_data,
 	input wire 					id_ma_we,
 	input wire 					id_ma_re,
 	input wire[ 2:0]			id_ma_width,
@@ -23,15 +23,12 @@ module ID_EX (
 	output reg 					ex_funct,
 	output reg[`RegBus]			ex_data1,
 	output reg[`RegBus]			ex_data2,
+	output reg[`RegBus]			ex_extra_data,
 	output reg 					ex_we,
 	output reg[`RegAddrBus]		ex_waddr,
-	output reg[`RegBus]			ex_extra_data,
-	output reg[`RegBus]			ex_wdata,
 	output reg 					ex_ma_we,
 	output reg 					ex_ma_re,
-	output reg[ 2:0]			ex_ma_width,
-	output reg[31:0]			ex_ma_addr,
-	output reg[31:0]			ex_ma_wdata
+	output reg[ 2:0]			ex_ma_width
 	);
 
 	always @ ( posedge clk ) begin
@@ -136,9 +133,9 @@ module EX (
 				`XOR_SEL: alu_out <= data1 ^ data2;
 				`ADD_SEL: alu_out <= data1 + data2;
 				`SLT_SEL: begin
-					if (data1[31] && !data2[31] ||
-						data1[31] && data2[31] && ((~data1) + 1) > ((~data2) + 1) ||
-						!data1[31] && !data2[31] && data1 < data2)
+					if ((data1[31] & ~data2[31]) == `True_v ||
+						(data1[31] & data2[31]) == `True_v && ((~data1) + 1 > (~data2) + 1) ||
+						(data1[31] | data2[31]) == `False_v && data1 < data2)
 						alu_out <= data1;
 					else
 						alu_out <= `ZeroWord;
@@ -149,7 +146,6 @@ module EX (
 					else
 						alu_out <= `ZeroWord;
 				end
-
 				`SLL_SEL: alu_out <= data1 << data2[4:0];
 				`SRL_SEL: begin
 					if (funct == `False_v)
@@ -170,8 +166,6 @@ module EX (
 			ma_we <= `False_v;
 			ma_re <= `False_v;
 			ma_width <= 3'b000;
-			ma_addr <= `ZeroWord;
-			ma_wdata <= `ZeroWord;
 		end
 		else if(rdy == `True_v)  begin
 			we <= we_in;
@@ -180,18 +174,23 @@ module EX (
 			ma_we <= ma_we_in;
 			ma_re <= ma_re_in;
 			ma_width <= ma_width_in;
-			$display("update ma_addr");
-			if (ma_we_in | ma_re_in) begin
-				$display("ma_addr get");
+		end
+	end
+
+	always @ ( * ) begin
+		if(rst == `RstEnable)begin
+			ma_addr <= `ZeroWord;
+			ma_wdata <= `ZeroWord;
+		end
+		else if(rdy == `True_v)  begin
+			// if ((ma_we_in | ma_re_in) == `True_v) begin
 				ma_addr <= alu_out;
 				ma_wdata <= reg2_in;
-			end
-			else begin
-				ma_addr <= `ZeroWord;
-				ma_wdata <= `ZeroWord;
-			end
-			// $display("opcode:%b alusel:%b funct:%b\ndata1:%h  data2:%h\nwe:%b waddr:%d\n",
-			// 		opcode, alusel, funct, data1, data2, we_in, waddr_in);
+			// end
+			// else begin
+			// 	ma_addr <= `ZeroWord;
+			// 	ma_wdata <= `ZeroWord;
+			// end
 		end
 	end
 
