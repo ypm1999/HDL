@@ -162,7 +162,7 @@ module MA (
 		end
 		else if(rdy == `True_v) begin
 			if(ma_re)
-				wdata_out <= ram_rdata;
+					wdata_out <= ram_rdata;
 			else
 				wdata_out <= wdata_in;
 		end

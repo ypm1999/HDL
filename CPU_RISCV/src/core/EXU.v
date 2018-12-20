@@ -40,6 +40,9 @@ module ID_EX (
 			ex_data2 <= `ZeroWord;
 			ex_we <= `False_v;
 			ex_waddr <= `ZeroWord;
+			ex_ma_we <= `False_v;
+			ex_ma_re <= `False_v;
+			ex_ma_width <= 3'b000;
 		end
 		else if (rdy == `True_v) begin
 			if (stall[1] == `True_v && stall[2] == `False_v)begin
@@ -50,6 +53,9 @@ module ID_EX (
 				ex_data2 <= `ZeroWord;
 				ex_we <= `False_v;
 				ex_waddr <= `ZeroWord;
+				ex_ma_we <= `False_v;
+				ex_ma_re <= `False_v;
+				ex_ma_width <= 3'b000;
 			end
 			else if(!stall[2]) begin
 				ex_opcode <= id_opcode;
@@ -80,8 +86,8 @@ module EX (
 	input wire[`AluOpBus] 		opcode,
 	input wire[`AluSelBus] 		alusel,
 	input wire 					funct,
-	input wire[`RegBus]			reg1_in,
-	input wire[`RegBus]			reg2_in,
+	input wire[`RegBus]			data1,
+	input wire[`RegBus]			data2,
 	input wire 					we_in,
 	input wire[`RegAddrBus]		waddr_in,
 	input wire[`RegBus]			extra_data_in,
@@ -103,24 +109,7 @@ module EX (
 	output reg 					stall_req
 	);
 
-	reg [31:0] 					alu_out, data1, data2;
-
-	always @ ( * ) begin
-		if(rst == `RstEnable) begin
-			data1 <= `ZeroWord;
-			data2 <= `ZeroWord;
-		end
-		else if(rdy == `True_v) begin
-			if (ma_we_in) begin
-				data1 <= reg1_in;
-				data2 <= extra_data_in;
-			end
-			else begin
-				data1 <= reg1_in;
-				data2 <= reg2_in;
-			end
-		end
-	end
+	reg [31:0] 					alu_out;
 
 	always @ ( * ) begin
 		if(rst == `RstEnable) begin
@@ -133,18 +122,10 @@ module EX (
 				`XOR_SEL: alu_out <= data1 ^ data2;
 				`ADD_SEL: alu_out <= data1 + data2;
 				`SLT_SEL: begin
-					if ((data1[31] & ~data2[31]) == `True_v ||
-						(data1[31] & data2[31]) == `True_v && ((~data1) + 1 > (~data2) + 1) ||
-						(data1[31] | data2[31]) == `False_v && data1 < data2)
-						alu_out <= data1;
-					else
-						alu_out <= `ZeroWord;
+					alu_out <= (data1 + ((~data2) + 1)) >> 31;
 				end
-				`SLTU_SEL: begin
-					if (data1 < data2)
-						alu_out <= data1;
-					else
-						alu_out <= `ZeroWord;
+				`SLTU_SEL:begin
+					alu_out <= (data1 < data2) ? 32'h00000001 : `ZeroWord;
 				end
 				`SLL_SEL: alu_out <= data1 << data2[4:0];
 				`SRL_SEL: begin
@@ -163,14 +144,22 @@ module EX (
 		if(rst == `RstEnable)begin
 			we <= `False_v;
 			waddr <= 5'b00000;
-			ma_we <= `False_v;
-			ma_re <= `False_v;
-			ma_width <= 3'b000;
+			wdata <= `ZeroWord;
 		end
 		else if(rdy == `True_v)  begin
 			we <= we_in;
 			waddr <= waddr_in;
 			wdata <= alu_out;
+		end
+	end
+
+	always @ ( * ) begin
+		if(rst == `RstEnable)begin
+			ma_we <= `False_v;
+			ma_re <= `False_v;
+			ma_width <= 3'b000;
+		end
+		else if(rdy == `True_v)  begin
 			ma_we <= ma_we_in;
 			ma_re <= ma_re_in;
 			ma_width <= ma_width_in;
@@ -185,7 +174,7 @@ module EX (
 		else if(rdy == `True_v)  begin
 			// if ((ma_we_in | ma_re_in) == `True_v) begin
 				ma_addr <= alu_out;
-				ma_wdata <= reg2_in;
+				ma_wdata <= extra_data_in;
 			// end
 			// else begin
 			// 	ma_addr <= `ZeroWord;

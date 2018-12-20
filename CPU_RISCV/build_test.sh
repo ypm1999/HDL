@@ -8,7 +8,7 @@ mkdir ./test
 # compiling rom
 riscv32-unknown-elf-as -o ./sys/rom.o -march=rv32i ./sys/rom.s
 # compiling testcase
-cp ./testcase/gcd.c ./test/test.c
+cp ./testcase/${1%.*}.c ./test/test.c
 riscv32-unknown-elf-gcc -o ./test/test.o -I ./sys -c ./test/test.c -O2 -march=rv32i -mabi=ilp32 -Wall
 # linking
 riscv32-unknown-elf-ld -T ./sys/memory.ld ./sys/rom.o ./test/test.o -L /opt/riscv/riscv32-unknown-elf/lib/ -L /opt/riscv/lib/gcc/riscv32-unknown-elf/8.2.0/ -lc -lgcc -lm -lnosys -o ./test/test.om
@@ -17,4 +17,4 @@ riscv32-unknown-elf-objcopy -O verilog ./test/test.om ./test/test.data
 # converting to binary format(for ram uploading)
 riscv32-unknown-elf-objcopy -O binary ./test/test.om ./test/test.bin
 # decompile (for debugging)
-riscv32-unknown-elf-objdump -D ./test/test.om > ./test/test.dump
+riscv32-unknown-elf-objdump -D ./test/test.om > ./test/test.dump -M no-aliases,numeric

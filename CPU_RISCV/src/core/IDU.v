@@ -63,8 +63,8 @@ module ID (
 	output reg[`RegAddrBus]		raddr1,
 	output reg[`RegAddrBus]		raddr2,
 
-	output reg[31:0]			reg1,
-	output reg[31:0]			reg2,
+	output reg[31:0]			data1,
+	output reg[31:0]			data2,
 
 	output reg 					we,
 	output reg[ 4:0]			waddr,
@@ -80,19 +80,16 @@ module ID (
 	output reg 					stall_req
 	);
 
-	reg [31:0]					imm;
+	reg [31:0]					reg1, reg2, imm, sign_delta;
 	wire [2:0]					func3 = inst[14:12];
 
 	always @ ( * ) begin
 		if (rst == `RstEnable)begin
-			raddr1 <= 5'b00000;
-			raddr2 <= 5'b00000;
 			waddr <= 5'b00000;
 			aluop <= 7'b0000000;
 			funct <= 1'b0;
 		end
 		else if(rdy == `True_v) begin
-			{raddr2, raddr1} <= inst[24:15];
 			{waddr, aluop} <= inst[11:0];
 			funct <= inst[30];
 		end
@@ -101,75 +98,92 @@ module ID (
 	always @ ( * ) begin
 		if (rst == `RstEnable)begin
 			we <= `False_v;
-			re1 <= `False_v;
-			re2 <= `False_v;
-			imm <= `ZeroWord;
 			ma_we <= `False_v;
 			ma_re <= `False_v;
 			ma_width <= 3'b000;
+			alusel <= 3'b000;
 		end
 		else if(rdy == `True_v)  begin
 			we <= `False_v;
-			re1 <= `False_v;
-			re2 <= `False_v;
-			imm <= `ZeroWord;
-			use_npc <= `False_v;
-			npc_addr <= `ZeroWord;
 			ma_we <= `False_v;
 			ma_re <= `False_v;
 			ma_width <= 3'b000;
-			//$display("operate: %d", inst);
-			$display("opcode: %b", inst[6:0]);
-			case(inst[6:0])
-				7'b0110111 :we <= `True_v;// U
-				7'b0010111 :we <= `True_v;// U
-				7'b1101111 :we <= `True_v;// J
-				7'b1100111 :we <= `True_v;// I
-				7'b1100011 :we <= `True_v;// B
-				7'b0000011 :begin // I
-					$display("re1 & re2");
+			alusel <= 3'b000;
+			case(inst[6:1])
+				6'b011011 :begin// U
 					we <= `True_v;
-					re1 <= `True_v;
-					alusel <= 3'b000;
-					ma_re <= `True_v;
-					ma_we <= `False_v;
-					if(inst[13])
-						ma_width <= 3'b100;
-					else if (inst[12])
-						ma_width <= 3'b010;
-					else
-						ma_width <= 3'b001;
-					if (func3[2] == 1'b1)
-						imm <= {{20{1'b0}}, inst[31:20]};
-					else
-						imm <= {{20{inst[31]}}, inst[30:20]};
 				end
-				7'b0100011 :begin// S
-					re1 <= `True_v;
-					re2 <= `True_v;
-					alusel <= 3'b000;
+				6'b001011 :begin// U
+					we <= `True_v;
+				end
+				6'b110111 :we <= `True_v;// J
+				6'b110011 :we <= `True_v;// I
+				6'b000001 :begin // I
+					we <= `True_v;
+					ma_re <= `True_v;
+					if(inst[13])
+						ma_width <= 3'b100;
+					else if (inst[12])
+						ma_width <= {inst[14], 2'b10};
+					else
+						ma_width <= {inst[14], 2'b01};
+				end
+				6'b010001 :begin// S
 					ma_we <= `True_v;
-					ma_re <= `False_v;
 					if(inst[13])
 						ma_width <= 3'b100;
 					else if (inst[12])
 						ma_width <= 3'b010;
 					else
 						ma_width <= 3'b001;
+				end
+				6'b001001 :begin// I/R;
+					we <= `True_v;
+					alusel <= inst[14:12];
+				end
+				6'b011001 :begin// R;
+					we <= `True_v;
+					alusel <= inst[14:12];
+				end
+				// default: begin
+				// 	we <= `False_v;
+				// 	ma_we <= `False_v;
+				// 	ma_re <= `False_v;
+				// 	ma_width <= 3'b000;
+				// 	alusel <= 3'b000;
+				// end
+			endcase
+		end
+	end
+
+	always @ ( * ) begin
+		if (rst == `RstEnable)begin
+			imm <= `ZeroWord;
+		end
+		else if(rdy == `True_v)  begin
+			case(inst[6:1])
+				6'b011011 :begin;// U
+					imm <= {inst[31:12], {12{1'b0}}};
+				end
+				6'b001011 :begin// U
+					imm <= {inst[31:12], {12{1'b0}}};
+				end
+				6'b110111 :begin// J
+					imm <= {{12{inst[31]}}, inst[19:12], inst[20], inst[30:21], 1'b0};
+				end
+				6'b110011 :begin// I
+					imm <= {{20{inst[31]}}, inst[30:20], 1'b0};
+				end
+				6'b110001 :begin// B
+					imm <= {{20{inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0};
+				end
+				6'b000001 :begin // I
+					imm <= {{20{1'b0}}, inst[31:20]};
+				end
+				6'b010001 :begin// S
 					imm <= {{20{inst[31]}}, inst[30:25], inst[11:7]};
 				end
-				7'b0010011 :// I/R;
-                begin
-					if (func3 == 3'b111)
-						$display("ANDI %d %d %h\n", inst[19:15], inst[11:7], {{20{1'b0}}, inst[31:20]});
-					if (func3 == 3'b110)
-						$display("ORI %d %d %h\n", inst[19:15], inst[11:7], {{20{1'b0}}, inst[31:20]});
-					if (func3 == 3'b001)
-						$display("SLLI %d %d %h\n", inst[19:15], inst[11:7], {{27{1'b0}}, inst[24:20]});
-					we <= `True_v;
-					re1 <= `True_v;
-					re2 <= `False_v;
-					alusel <= inst[14:12];
+				6'b001001 :begin// I/R;
 					if (func3 == 3'b001 || func3 == 3'b101)
 						imm <= {{27{1'b0}}, inst[24:20]};
 					else if (func3 != 3'b011)
@@ -177,18 +191,33 @@ module ID (
 					else
 						imm <= {{20{1'b0}}, inst[31:20]};
 				end
-				7'b0110011 :we <= `True_v;// R
 				default: begin
-					we <= `False_v;
-					re1 <= `False_v;
-					re2 <= `False_v;
 					imm <= `ZeroWord;
-					alusel <= 3'b000;
-					ma_we <= `False_v;
-					ma_re <= `False_v;
-					ma_width <= 3'b000;
 				end
 			endcase
+		end
+	end
+
+	always @ ( * ) begin
+		if (rst == `RstEnable)begin
+			re1 <= `False_v;
+			re2 <= `False_v;
+			raddr1 <= 5'b00000;
+			raddr2 <= 5'b00000;
+		end
+		else if(rdy == `True_v)  begin
+			re1 <= `True_v;
+			re2 <= `False_v;
+			raddr1 <= 5'b00000;
+			raddr2 <= 5'b00000;
+			if (~inst[2]) begin
+				if (inst[1] & inst[5]) begin
+					re2 <= `True_v;
+					{raddr2, raddr1} <= inst[24:15];
+				end
+				else
+					raddr1 <= inst[19:15];
+			end
 		end
 	end
 
@@ -204,8 +233,6 @@ module ID (
 				else
 					reg1 <= rdata1;
 			end
-			else
-				reg1 <= imm;
 		end
 	end
 
@@ -221,18 +248,80 @@ module ID (
 				else
 					reg2 <= rdata2;
 			end
-			else begin
-				reg2 <= imm;
-				// $display("reg2 <= imm");
-			end
 		end
 	end
 
 	always @ ( * ) begin
-		if (rst == `RstEnable)
+		if (rst == `RstEnable)begin
+			sign_delta <= `ZeroWord;
+		end
+		else if(rdy == `True_v)  begin
+			sign_delta <= reg1 + ((~reg2) + 1);
+		end
+	end
+
+	always @ ( * ) begin
+		if (rst == `RstEnable)begin
+			use_npc <= `False_v;
+			npc_addr <= `ZeroWord;
+		end
+		else if(rdy == `True_v)  begin
+			case(inst[6:1])
+				6'b110111 :begin// J
+					use_npc <= `True_v;
+					npc_addr <= pc + imm;
+				end
+				6'b110011 :begin;// I
+					use_npc <= `True_v;
+					npc_addr <= imm;
+				end
+				6'b110001 :begin;// B
+					npc_addr <= imm + pc;
+					if (inst[13] == 1'b0) begin
+						use_npc <= ((reg1 <= reg2) & ~inst[12])
+									| (reg1 > reg2 & inst[12]);
+					end
+					else if (inst[14] != 1'b0) begin
+						use_npc <= ((sign_delta <= 0 | sign_delta[31]) & ~inst[12])
+									| ((sign_delta > 0)  & inst[12]);
+					end
+					else
+						use_npc <= (reg1 == reg2) ^ inst[12];
+				end
+				default: begin
+					use_npc <= `False_v;
+					npc_addr <= `ZeroWord;
+				end
+			endcase
+		end
+	end
+
+	// always @ ( * ) begin
+	// 	if (rst == `RstEnable) begin
+	// 		data1 <= `ZeroWord;
+	// 	end
+	// 	else if (rdy) begin
+	// 		data1 <= (re1) ? reg1 : imm;
+	// 	end
+	// end
+
+	always @ ( * ) begin
+		if (rst == `RstEnable) begin
+			data1 <= `ZeroWord;
+			data2 <= `ZeroWord;
 			extra_data = `ZeroWord;
-		else
-			extra_data = imm;
+		end
+		else if (rdy) begin
+			data1 <= reg1;
+			if(ma_we)begin
+				data2 <= imm;
+				extra_data <= reg2;
+			end
+			else begin
+				data2 <= (re2) ? reg2 : imm;
+				extra_data <= ((inst[6] & inst[2]) == 1'b1) ? (pc + 4) :imm;
+			end
+		end
 	end
 
 endmodule // ID

@@ -20,9 +20,6 @@ module RegFile(
 
 	reg[`RegBus] registers[0:`RegNum - 1];
 
-	initial begin
-		registers[0] <= 0;
-	end
 
 	always @ ( posedge clk ) begin
 		if (rst == `RstDisable && rdy == `True_v)
@@ -35,7 +32,7 @@ module RegFile(
 		if (rst == `RstEnable)
 			rdata1 <= `ZeroWord;
 		else if(rdy == `True_v) begin
-			if (re1 == `ReadEnable)begin
+			if (re1 == `ReadEnable & raddr1 != 5'b00000)begin
 				if (we == `WriteEnable && waddr == raddr1)
 					rdata1 <= wdata;
 				else
@@ -50,7 +47,7 @@ module RegFile(
 		if (rst == `RstEnable)
 			rdata2 <= `ZeroWord;
 		else if(rdy == `True_v) begin
-			if (re2 == `ReadEnable) begin
+			if (re2 == `ReadEnable & raddr2 != 5'b00000) begin
 				if (we == `WriteEnable && waddr == raddr2)
 					rdata2 <= wdata;
 				else

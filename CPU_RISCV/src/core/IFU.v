@@ -18,9 +18,7 @@ module IF (
 
 	output reg 				stall_req
 	);
-	reg 		bj_stall, reset_bj;
-	reg 		try_stall, rst_stall;
-
+	reg 		bj_stall, try_stall, rst_stall;
 
 	always @ ( posedge clk ) begin
 		if (rst == `RstEnable)begin
@@ -28,25 +26,29 @@ module IF (
 			ram_inst_re <= `False_v;
 			ram_inst_addr <= 32'hffffffff;
 			try_stall <= `False_v;
+			bj_stall <= `False_v;
 		end
 		else if(rdy == `True_v) begin
 			if (stall[0] == `False_v) begin
-				ram_inst_re <= `False_v;
-				if (use_npc) begin
+				if (inst[6:4] == 3'b110 && !bj_stall)begin
+					ram_inst_re <= `False_v;
+					bj_stall <= `True_v;
+				end
+				else if (use_npc) begin
 					pc <= npc_addr;
-					ram_inst_addr <= npc_addr;
 					ram_inst_re <= `True_v;
+					ram_inst_addr <= npc_addr;
 					try_stall <= ~try_stall;
+					bj_stall <= `False_v;
 				end
 				else begin
 					pc <= pc + 4;
-					ram_inst_addr <= pc + 4;
 					ram_inst_re <= `True_v;
+					ram_inst_addr <= pc + 4;
 					try_stall <= ~try_stall;
+					bj_stall <= `False_v;
 				end
-				$display("::%h", pc);
 			end
-			else $display("%h", pc);
 		end
 	end
 
@@ -70,16 +72,8 @@ module IF (
 			if (rst)
 				stall_req <= `False_v;
 			else if (rdy) begin
-				stall_req <= try_stall ^ rst_stall;
-				$display("::%b", try_stall ^ rst_stall);
+				stall_req <= (try_stall ^ rst_stall);
 			end
 		end
-
-	// always @ ( * ) begin
-	// 	if (inst[6:4] == 3'b110 || !reset_bj)
-	// 		bj_stall <= `True_v;
-	// 	else
-	// 		bj_stall <= `False_v;
-	// end
 
 endmodule // pc_reg

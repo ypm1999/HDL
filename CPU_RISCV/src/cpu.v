@@ -248,8 +248,8 @@ ID id0(
 	.raddr1(reg_raddr1),
 	.raddr2(reg_raddr2),
 
-	.reg1(id_data1),
-	.reg2(id_data2),
+	.data1(id_data1),
+	.data2(id_data2),
 
 	.we(id_we),
 	.waddr(id_waddr),
@@ -323,8 +323,8 @@ EX ex0(
 	.opcode(ex_aluop),
 	.alusel(ex_alusel),
 	.funct(ex_funct),
-	.reg1_in(ex_data1),
-	.reg2_in(ex_data2),
+	.data1(ex_data1),
+	.data2(ex_data2),
 	.we_in(ex_we_in),
 	.waddr_in(ex_waddr_in),
     .extra_data_in(ex_extra_data),

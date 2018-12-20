@@ -19,7 +19,7 @@ module Memory_Accesser (
 
 	output reg 					busy			//working busy singal
 	);
-	reg [7:0] 			tmp[0:3];
+	reg [7:0] 			tmp[0:2];
 	reg [2:0] 			cnt;
 	reg [3:0] 			sta;
 
@@ -27,7 +27,7 @@ module Memory_Accesser (
 		if (rst) begin
 			sta <= 4'b0000;
 			cnt <= 3'b000;
-			{tmp[0], tmp[1], tmp[2], tmp[3]} <= `ZeroWord;
+			{tmp[0], tmp[1], tmp[2]} <= 24'h000000;
 			mem_dout <= 8'h00;
 			mem_a <= `ZeroWord;
 			mem_wr <= 1'b0;
@@ -61,18 +61,24 @@ module Memory_Accesser (
 				end
 				//read status
 				4'b0001:begin
-					if (cnt[2]) begin
-						ram_rdata <= {mem_din, tmp[2], tmp[1], tmp[0]};
+					if (cnt[0]) begin
+						if(cnt[2])
+							ram_rdata <= {{25{mem_din[7]}}, mem_din[6:0]};
+						else
+							ram_rdata <= {24'h000000, mem_din};
 						busy <= `False_v;
 						sta <= 4'b0000;
 					end
 					else if (cnt[1]) begin
-						ram_rdata <= {16'h0000, mem_din, tmp[2]};
+						if(cnt[2])
+							ram_rdata <= {{17{mem_din[7]}}, mem_din[6:0], tmp[2]};
+						else
+							ram_rdata <= {16'h0000, mem_din, tmp[2]};
 						busy <= `False_v;
 						sta <= 4'b0000;
 					end
-					else if (cnt[0]) begin
-						ram_rdata <= {24'h000000, mem_din};
+					else if (cnt[2]) begin
+						ram_rdata <= {mem_din, tmp[2], tmp[1], tmp[0]};
 						busy <= `False_v;
 						sta <= 4'b0000;
 					end
