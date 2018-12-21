@@ -80,7 +80,7 @@ reg [ADDR_WIDTH-1:0] q_addr_a;
 always @(posedge clk)
   begin
     if (we) begin
-        $display("write::%h < %h", addr_a, din_a);
+        //$display("write::%h < %h", addr_a, din_a);
         ram[addr_a] <= din_a;
     end
      q_addr_a <= addr_a;
@@ -94,7 +94,7 @@ initial begin
   for (i=0;i<2**ADDR_WIDTH;i=i+1) begin
     ram[i] = 0;
   end
-  $readmemh("E:/code/HDL/CPU_RISCV/src/test.data", ram); // add test.data to vivado project or specify a valid file path
+  $readmemh("E:/code/HDL/CPU_RISCV/test/test.data", ram); // add test.data to vivado project or specify a valid file path
 end
 
 endmodule

@@ -28,7 +28,7 @@ module IF_ID (
 			end
 			else if (!stall[1])begin
 				id_pc <= if_pc;
-				$display("pc:%h::%h", if_pc, if_inst);
+				//$display("pc:%h::%h", if_inst, if_pc);
 				id_inst <= if_inst;
 			end
 			// $display("IF_ID:: inst:%d", if_inst);
@@ -185,7 +185,7 @@ module ID (
 					imm <= {{20{inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0};
 				end
 				6'b000001 :begin // I
-					imm <= {{20{1'b0}}, inst[31:20]};
+					imm <= {{21{inst[31]}}, inst[30:20]};
 				end
 				6'b010001 :begin// S
 					imm <= {{20{inst[31]}}, inst[30:25], inst[11:7]};

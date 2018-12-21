@@ -12,3 +12,6 @@ CROSS_COMPILE = $(TOOL_CHAIN)/riscv32-unknown-elf-
 	rm -f *.om *.o
 clean:
 	rm -f *.o *.om *.bin *.data
+	
+	/opt/riscv/bin/riscv32-unknown-elf-objdump -S -d app.elf > app.lst
+	/opt/riscv/bin/riscv32-unknown-elf-objcopy -F verilog app.elf app.mem

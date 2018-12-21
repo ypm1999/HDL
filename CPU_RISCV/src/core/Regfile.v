@@ -24,6 +24,7 @@ module RegFile(
 	always @ ( posedge clk ) begin
 		if (rst == `RstDisable && rdy == `True_v)
 			if (we == `WriteEnable && waddr != 5'b00000)begin
+				//$display("p_write:%h <= %d", waddr, wdata);
 				registers[waddr] <= wdata;
 			end
 	end
