@@ -7,7 +7,7 @@ CROSS_COMPILE = $(TOOL_CHAIN)/riscv32-unknown-elf-
 	$(CROSS_COMPILE)ld $< -o $@
 %.data: %.om
 	$(CROSS_COMPILE)objcopy -O verilog $<  $@
-	$(CROSS_COMPILE)objcopy -O binary $<  test.bin
+	$(CROSS_COMPILE)objdump -D $< > mytest.S -M no-aliases,numeric
 	cp $@ ../$@
 	rm -f *.om *.o
 clean:

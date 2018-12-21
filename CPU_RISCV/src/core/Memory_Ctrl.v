@@ -43,7 +43,10 @@ module Memory_Accesser (
 						cnt <= width;
 						mem_a <= ram_addr;
 						mem_wr <= 1'b0;
-						sta <= width + 4'b0001;
+						if (width == 3'b100)
+							sta <= 4'b0101;
+						else
+							sta <= width[1:0] + 4'b0001;
 						busy <= `True_v;
 					end
 					else if(we) begin
@@ -63,17 +66,18 @@ module Memory_Accesser (
 				4'b0001:begin
 					if (cnt[0]) begin
 						if(cnt[2])
-							ram_rdata <= {{25{mem_din[7]}}, mem_din[6:0]};
-						else
 							ram_rdata <= {24'h000000, mem_din};
+						else
+							ram_rdata <= {{25{mem_din[7]}}, mem_din[6:0]};
+
 						busy <= `False_v;
 						sta <= 4'b0000;
 					end
 					else if (cnt[1]) begin
 						if(cnt[2])
-							ram_rdata <= {{17{mem_din[7]}}, mem_din[6:0], tmp[2]};
-						else
 							ram_rdata <= {16'h0000, mem_din, tmp[2]};
+						else
+							ram_rdata <= {{17{mem_din[7]}}, mem_din[6:0], tmp[2]};
 						busy <= `False_v;
 						sta <= 4'b0000;
 					end

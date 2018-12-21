@@ -17,4 +17,4 @@ riscv32-unknown-elf-objcopy -O verilog ./test/test.om ./test/test.data
 # converting to binary format(for ram uploading)
 riscv32-unknown-elf-objcopy -O binary ./test/test.om ./test/test.bin
 # decompile (for debugging)
-riscv32-unknown-elf-objdump -D ./test/test.om > ./test/test.dump -M no-aliases,numeric
+riscv32-unknown-elf-objdump -D ./test/test.om > ./test/test.S -M no-aliases,numeric

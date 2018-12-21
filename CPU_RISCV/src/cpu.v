@@ -30,6 +30,7 @@ module cpu(
 //IF->IFID->ID
 wire[`RomAddrBus]	if_pc;
 wire[`InstBus]		if_inst;
+wire                if_bj_stall;
 wire[`RomAddrBus]	id_pc;
 wire[`InstBus]		id_inst;
 
@@ -198,10 +199,12 @@ IF if0(
 	.npc_addr(npc_addr),
 	.ram_inst(ram_ctrl_inst_data),
 	.ram_inst_busy(ram_ctrl_inst_busy),
+
 	.stall(stall_cmd),
 
 	.pc(if_pc),
 	.inst(if_inst),
+    .bj_stall(if_bj_stall),
 	.ram_inst_re(ram_ctrl_inst_re),
 	.ram_inst_addr(ram_ctrl_inst_addr),
 
@@ -215,6 +218,7 @@ IF_ID if_id0(
 
 	.if_pc(if_pc),
 	.if_inst(if_inst),
+    .bj_stall(if_bj_stall),
 
     .stall(stall_cmd),
 

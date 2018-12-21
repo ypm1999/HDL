@@ -110,6 +110,7 @@ module EX (
 	);
 
 	reg [31:0] 					alu_out;
+	wire [31:0]					AND, OR, XOR, ADD, SUB, SLT;
 
 	always @ ( * ) begin
 		if(rst == `RstEnable) begin
@@ -120,9 +121,17 @@ module EX (
 				`AND_SEL: alu_out <= data1 & data2;
 				`OR_SEL: alu_out <= data1 | data2;
 				`XOR_SEL: alu_out <= data1 ^ data2;
-				`ADD_SEL: alu_out <= data1 + data2;
+				`ADD_SEL: begin
+					if (funct)
+						alu_out <= data1 + (~data2 + 1);
+					else
+						alu_out <= data1 + data2;
+				end
 				`SLT_SEL: begin
-					alu_out <= (data1 + ((~data2) + 1)) >> 31;
+					alu_out <= ((data1[31] & ~data2[31])
+								| (data1[31] & data2[31] & (~data1 + 1 > ~data2 + 1))
+								| (~data1[31] & ~data2[31] & (data1 < data2)))
+								 ? 32'h00000001 : `ZeroWord;
 				end
 				`SLTU_SEL:begin
 					alu_out <= (data1 < data2) ? 32'h00000001 : `ZeroWord;

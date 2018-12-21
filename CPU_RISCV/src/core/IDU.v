@@ -8,6 +8,7 @@ module IF_ID (
 
 	input wire[`InstAddrBus]	if_pc,
 	input wire[`InstBus] 		if_inst,
+	input wire 					bj_stall,
 	input wire[4:0] 			stall,
 
 
@@ -21,12 +22,13 @@ module IF_ID (
 			id_inst <= `ZeroWord;
 		end
 		else if(rdy == `True_v)begin
-			if (stall[0] & !stall[1]) begin
+			if ((stall[0] & !stall[1]) | (bj_stall)) begin
 				id_pc <= `ZeroWord;
 				id_inst	 <= `ZeroWord;
 			end
 			else if (!stall[1])begin
 				id_pc <= if_pc;
+				$display("pc:%h::%h", if_pc, if_inst);
 				id_inst <= if_inst;
 			end
 			// $display("IF_ID:: inst:%d", if_inst);
@@ -80,8 +82,9 @@ module ID (
 	output reg 					stall_req
 	);
 
-	reg [31:0]					reg1, reg2, imm, sign_delta;
+	reg [31:0]					reg1, reg2, imm;
 	wire [2:0]					func3 = inst[14:12];
+	wire 						sign_lt, lt, eq;
 
 	always @ ( * ) begin
 		if (rst == `RstEnable)begin
@@ -91,7 +94,11 @@ module ID (
 		end
 		else if(rdy == `True_v) begin
 			{waddr, aluop} <= inst[11:0];
-			funct <= inst[30];
+			if ((inst[6:1] == 6'b001001) && (inst[14:12] == 3'b101) ||
+				(inst[6:1] == 6'b011001))
+				funct <= inst[30];
+			else
+				funct <= 1'b0;
 		end
 	end
 
@@ -172,7 +179,7 @@ module ID (
 					imm <= {{12{inst[31]}}, inst[19:12], inst[20], inst[30:21], 1'b0};
 				end
 				6'b110011 :begin// I
-					imm <= {{20{inst[31]}}, inst[30:20], 1'b0};
+					imm <= {{21{inst[31]}}, inst[30:20]};
 				end
 				6'b110001 :begin// B
 					imm <= {{20{inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0};
@@ -186,10 +193,8 @@ module ID (
 				6'b001001 :begin// I/R;
 					if (func3 == 3'b001 || func3 == 3'b101)
 						imm <= {{27{1'b0}}, inst[24:20]};
-					else if (func3 != 3'b011)
-						imm <= {{20{inst[31]}}, inst[30:20]};
 					else
-						imm <= {{20{1'b0}}, inst[31:20]};
+						imm <= {{21{inst[31]}}, inst[30:20]};
 				end
 				default: begin
 					imm <= `ZeroWord;
@@ -206,17 +211,16 @@ module ID (
 			raddr2 <= 5'b00000;
 		end
 		else if(rdy == `True_v)  begin
-			re1 <= `True_v;
-			re2 <= `False_v;
-			raddr1 <= 5'b00000;
-			raddr2 <= 5'b00000;
-			if (~inst[2]) begin
-				if (inst[1] & inst[5]) begin
-					re2 <= `True_v;
-					{raddr2, raddr1} <= inst[24:15];
-				end
-				else
-					raddr1 <= inst[19:15];
+			if (inst[2] & ~(inst[6] & ~inst[3])) begin
+				re1 <= `True_v;
+				re2 <= `False_v;
+				raddr1 <= 5'b00000;
+				raddr2 <= 5'b00000;
+			end
+			else begin
+				{raddr2, raddr1} <= inst[24:15];
+				re2 <= inst[1] & inst[5];
+				re1 <= `True_v;
 			end
 		end
 	end
@@ -251,14 +255,11 @@ module ID (
 		end
 	end
 
-	always @ ( * ) begin
-		if (rst == `RstEnable)begin
-			sign_delta <= `ZeroWord;
-		end
-		else if(rdy == `True_v)  begin
-			sign_delta <= reg1 + ((~reg2) + 1);
-		end
-	end
+	assign sign_lt = ((reg1[31] & ~reg2[31])
+					| (reg1[31] & reg2[31] & (~reg1 + 1 > ~reg2 + 1))
+					| (~reg1[31] & ~reg2[31] & (reg1 < reg2)));
+	assign eq = (reg1 == reg2);
+	assign lt = (reg1 < reg2);
 
 	always @ ( * ) begin
 		if (rst == `RstEnable)begin
@@ -273,20 +274,19 @@ module ID (
 				end
 				6'b110011 :begin;// I
 					use_npc <= `True_v;
-					npc_addr <= imm;
+					npc_addr <= (imm + reg1) & 32'hfffffffe;
 				end
 				6'b110001 :begin;// B
 					npc_addr <= imm + pc;
-					if (inst[13] == 1'b0) begin
-						use_npc <= ((reg1 <= reg2) & ~inst[12])
-									| (reg1 > reg2 & inst[12]);
+					if (inst[14] == 1'b0) begin
+						use_npc <= eq ^ inst[12];
 					end
-					else if (inst[14] != 1'b0) begin
-						use_npc <= ((sign_delta <= 0 | sign_delta[31]) & ~inst[12])
-									| ((sign_delta > 0)  & inst[12]);
+					else if (inst[13] == 1'b0) begin
+						use_npc <= sign_lt ^ inst[12];
 					end
 					else
-						use_npc <= (reg1 == reg2) ^ inst[12];
+						use_npc <= lt ^ inst[12];
+
 				end
 				default: begin
 					use_npc <= `False_v;
@@ -296,30 +296,38 @@ module ID (
 		end
 	end
 
-	// always @ ( * ) begin
-	// 	if (rst == `RstEnable) begin
-	// 		data1 <= `ZeroWord;
-	// 	end
-	// 	else if (rdy) begin
-	// 		data1 <= (re1) ? reg1 : imm;
-	// 	end
-	// end
-
 	always @ ( * ) begin
 		if (rst == `RstEnable) begin
 			data1 <= `ZeroWord;
+		end
+		else if (rdy) begin
+			if (inst[6:2] == 5'b00101)
+				data1 <= imm;
+			else if (inst[6:2] == 5'b11001)
+				data1 <= `ZeroWord;
+			else
+				data1 <= reg1;
+		end
+	end
+
+	always @ ( * ) begin
+		if (rst == `RstEnable) begin
 			data2 <= `ZeroWord;
 			extra_data = `ZeroWord;
 		end
 		else if (rdy) begin
-			data1 <= reg1;
 			if(ma_we)begin
 				data2 <= imm;
 				extra_data <= reg2;
 			end
 			else begin
-				data2 <= (re2) ? reg2 : imm;
-				extra_data <= ((inst[6] & inst[2]) == 1'b1) ? (pc + 4) :imm;
+				if (inst[6:2] == 5'b00101)
+					data2 <= pc;
+				else if (inst[6] & inst[2])
+					data2 <= pc + 4;
+				else
+					data2 <= (re2) ? reg2 : imm;
+				extra_data <= imm;
 			end
 		end
 	end

@@ -13,12 +13,13 @@ module IF (
 
 	output reg[31:0] 		pc,
 	output reg[31:0]		inst,
+	output reg				bj_stall,
 	output reg 				ram_inst_re,
 	output reg[31:0]		ram_inst_addr,
 
 	output reg 				stall_req
 	);
-	reg 		bj_stall, try_stall, rst_stall;
+	reg 		 try_stall, rst_stall;
 
 	always @ ( posedge clk ) begin
 		if (rst == `RstEnable)begin
