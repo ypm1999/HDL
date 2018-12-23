@@ -23,15 +23,12 @@ module Memory_Accesser (
 	reg [2:0] 			cnt;
 	reg [3:0] 			sta;
 
+
 	always @ ( posedge clk ) begin
 		if (rst) begin
 			sta <= 4'b0000;
-			cnt <= 3'b000;
-			{tmp[0], tmp[1], tmp[2]} <= 24'h000000;
-			mem_dout <= 8'h00;
 			mem_a <= `ZeroWord;
 			mem_wr <= 1'b0;
-			ram_rdata <= `ZeroWord;
 			busy <= `False_v;
 		end
 		else if (rdy) begin
@@ -40,105 +37,111 @@ module Memory_Accesser (
 				4'b0000:begin
 					mem_wr <= 1'b0;
 					if (re) begin
-						cnt <= width;
 						mem_a <= ram_addr;
 						mem_wr <= 1'b0;
-						if (width == 3'b100)
-							sta <= 4'b0101;
-						else
-							sta <= width[1:0] + 4'b0001;
+						sta <= width[0] ? 4'b0010 : (width[1] ? 4'b0011 : 4'b0101);
 						busy <= `True_v;
 					end
 					else if(we) begin
-						cnt <= width;
 						mem_a <= ram_addr;
 						mem_wr <= 1'b1;
-						mem_dout <= ram_wdata[7:0];
-						busy <= `True_v;
-						if (width[0]) begin
-							busy <= `False_v;
-						end
-						else sta <= 4'b1011;
+						busy <= ~width[0];
+						sta <= {4{~width[0]}} & 4'b1011;
 					end
-					else sta <= 4'b0000;
 				end
 				//read status
 				4'b0001:begin
-					if (cnt[0]) begin
-						if(cnt[2])
-							ram_rdata <= {24'h000000, mem_din};
-						else
-							ram_rdata <= {{25{mem_din[7]}}, mem_din[6:0]};
-
-						busy <= `False_v;
-						sta <= 4'b0000;
-					end
-					else if (cnt[1]) begin
-						if(cnt[2])
-							ram_rdata <= {16'h0000, mem_din, tmp[2]};
-						else
-							ram_rdata <= {{17{mem_din[7]}}, mem_din[6:0], tmp[2]};
-						busy <= `False_v;
-						sta <= 4'b0000;
-					end
-					else if (cnt[2]) begin
-						ram_rdata <= {mem_din, tmp[2], tmp[1], tmp[0]};
-						busy <= `False_v;
-						sta <= 4'b0000;
-					end
-					else sta <= 1111;
-				end
-				4'b0010:begin
-					tmp[2] <= mem_din;
-					sta <= sta - 4'b0001;
-				end
-				4'b0011:begin
-					mem_a <= mem_a + 1;
-					tmp[1] <= mem_din;
-					sta <= sta - 4'b0001;
-				end
-				4'b0100:begin
-					mem_a <= mem_a + 1;
-					tmp[0] <= mem_din;
-					sta <= sta - 4'b0001;
-				end
-				4'b0101:begin
-					mem_a <= mem_a + 1;
-					sta <= sta - 4'b0001;
-				end
-				4'b0110:begin
-					mem_a <= mem_a + 1;
-					sta <= sta - 4'b0001;
+					busy <= `False_v;
+					sta <= 4'b0000;
 				end
 				//write status
 				4'b1000:begin
 					mem_a <= mem_a + 1;
-					mem_dout <= ram_wdata[31:24];
-					if (cnt[2]) begin
-						busy <= `False_v;
-						sta = 4'b0000;
-					end
-					else
-						sta <= 4'b1111;
+					busy <= ~cnt[2];
+					sta = 4'b0000;
 				end
-				4'b1001:begin
+				4'b1011:begin
 					mem_a <= mem_a + 1;
-					mem_dout <= ram_wdata[23:16];
+					busy <= ~cnt[1];
+					sta <= {4{~cnt[1]}} & 4'b1001;
+				end
+				default:begin
+					mem_a <= mem_a + 1;
 					sta <= sta - 4'b0001;
 				end
 
-				4'b1011:begin
-					mem_a <= mem_a + 1;
-					mem_dout <= ram_wdata[15:8];
-					if (cnt[1]) begin
-						busy <= `False_v;
-						sta = 4'b0000;
-					end
+			endcase
+		end
+	end
+
+	always @ ( posedge clk ) begin
+		if (rst)
+			ram_rdata <= `ZeroWord;
+		else if(rdy) begin
+			if (sta == 4'b0001)begin
+				if (cnt[0]) begin
+					if(cnt[2])
+						ram_rdata <= {24'h000000, mem_din};
 					else
-						sta <= 4'b1001;
+						ram_rdata <= {{25{mem_din[7]}}, mem_din[6:0]};
+				end
+				else if (cnt[1]) begin
+					if(cnt[2])
+						ram_rdata <= {16'h0000, mem_din, tmp[2]};
+					else
+						ram_rdata <= {{17{mem_din[7]}}, mem_din[6:0], tmp[2]};
+				end
+				else if (cnt[2])
+					ram_rdata <= {mem_din, tmp[2], tmp[1], tmp[0]};
+			end
+		end
+	end
+
+	always @ ( posedge clk ) begin
+		if (rst)
+			cnt <= `ZeroWord;
+		else if(rdy) begin
+			if (sta == 4'b0000)
+				cnt <= width;
+		end
+	end
+
+	always @ ( posedge clk ) begin
+		if (rst)
+			{tmp[0], tmp[1], tmp[2]} <= 24'h000000;
+		else if(rdy) begin
+			case(sta)
+				4'b0010:begin
+					tmp[2] <= mem_din;
+				end
+				4'b0011:begin
+					tmp[1] <= mem_din;
+				end
+				4'b0100:begin
+					tmp[0] <= mem_din;
 				end
 			endcase
+		end
+	end
 
+	always @ ( posedge clk ) begin
+		if (rst)
+			mem_dout <= 8'h00;
+		else if(rdy) begin
+			case(sta)
+				4'b0000:begin
+					mem_dout <= ram_wdata[7:0];
+				end
+				4'b1000:begin
+					mem_dout <= ram_wdata[31:24];
+				end
+				4'b1001:begin
+					mem_dout <= ram_wdata[23:16];
+				end
+				4'b1011:begin
+					mem_dout <= ram_wdata[15:8];
+				end
+			endcase
 		end
 	end
 
@@ -151,18 +154,18 @@ module Memory_Ctrl (
     input  wire                 rst,
 	input  wire					rdy,
 
-	input wire 					inst_re,		//instruction read enable
+	(* mark_debug="true" *)input wire 					inst_re,		//instruction read enable
 	input wire [31:0]			inst_addr,		//instruction read address
 	output reg [31:0]			inst_data,		//instruction data read from ram
-	output reg 					inst_busy,		//instruction reading busy signal
+	(* mark_debug="true" *)output reg 					inst_busy,		//instruction reading busy signal
 
-	input wire 					mem_we,
-	input wire 					mem_re,			//mem read enable
+	(* mark_debug="true" *)input wire 					mem_we,
+	(* mark_debug="true" *)input wire 					mem_re,			//mem read enable
 	input wire [31:0]			mem_addr,		//mem read address
 	input wire [2:0] 			mem_width,
 	input wire [31:0]			mem_wdata,
 	output reg [31:0]			mem_rdata,		//mem data read from ram
-	output reg 					mem_busy,		//mem reading busy signal
+	(* mark_debug="true" *)output reg 					mem_busy,		//mem reading busy signal
 
 	input wire 					ram_busy,		//following is wires to ram
 	input wire [31:0] 			ram_rdata,
@@ -178,7 +181,7 @@ module Memory_Ctrl (
 	reg 		mem_work, inst_work;
 
 	always @ ( posedge clk ) begin
-		if (rst == `True_v)begin
+		if (rst)begin
 			ram_we <= `False_v;
 			ram_re <= `False_v;
 			ram_addr <= `ZeroWord;
@@ -190,7 +193,7 @@ module Memory_Ctrl (
 			inst_busy <= `False_v;
 			sta <= 2'b00;
 		end
-		else if (rdy == `True_v)begin
+		else if (rdy)begin
 			case (sta)
 				2'b00: begin
 					ram_we <= `False_v;
@@ -230,12 +233,12 @@ module Memory_Ctrl (
 					mem_rdata <= `ZeroWord;
 					inst_data <= `ZeroWord;
 					if (ram_busy == `False_v) begin
-						if (mem_busy == `True_v) begin
+						if (mem_busy) begin
 							mem_busy <= `False_v;
-							if(mem_re == `True_v)
+							if(mem_re)
 								mem_rdata <= ram_rdata;
 						end
-						else if(inst_busy == `True_v) begin
+						else if(inst_busy) begin
 							inst_busy <= `False_v;
 							inst_data <= ram_rdata;
 						end

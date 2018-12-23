@@ -1,7 +1,7 @@
 #!/bin/bash
 #set -e
-#prefix='/opt/riscv'
-#export PATH=$prefix/bin:$PATH
+prefix='/opt/riscv'
+export PATH=$prefix/bin:$PATH
 # clearing test dir
 rm -rf ./test
 mkdir ./test

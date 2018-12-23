@@ -1,7 +1,7 @@
 // testbench top module file
 // for simulation only
 
-`timescale 1ns/1ps
+`timescale 1ns/10ps
 module testbench;
 
 reg clk;
