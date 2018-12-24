@@ -2,27 +2,26 @@
 
 module IF (
 	input wire 				clk,
-	input wire 				rst,
-	input wire 				rdy,
+	(*MARK_DEBUG="TRUE"*) input wire 				rst,
+	(*MARK_DEBUG="TRUE"*) input wire 				rdy,
 
-	input wire 				use_npc,
+	 input wire 				use_npc,
 	input wire[31:0]		npc_addr,
-	input wire[31:0]		ram_inst,
-	input wire 				ram_inst_busy,
+	(*MARK_DEBUG="TRUE"*) input wire[31:0]		ram_inst,
+	(*MARK_DEBUG="TRUE"*) input wire 				ram_inst_busy,
 	input wire[4:0] 		stall,
 
-	output reg[31:0] 		pc,
-	output reg[31:0]		inst,
-	output reg				bj_stall,
-	output reg 				ram_inst_re,
-	output reg[31:0]		ram_inst_addr,
+	(*MARK_DEBUG="TRUE"*)output reg[31:0] 		pc,
+	(*MARK_DEBUG="TRUE"*)output reg[31:0]		inst,
+	(*MARK_DEBUG="TRUE"*)output reg				bj_stall,
+	(*MARK_DEBUG="TRUE"*)output reg 				ram_inst_re,
+	(*MARK_DEBUG="TRUE"*)output reg[31:0]		ram_inst_addr,
 
-	output reg 				stall_req
+	(*MARK_DEBUG="TRUE"*)output reg 				stall_req
 	);
-	reg 		 	try_stall, rst_stall;
+	(*MARK_DEBUG="TRUE"*)reg 		 	try_stall, rst_stall;
 	wire[31:0]		pcp4;
 	assign pcp4 = pc + 4;
-
 
 	always @ ( posedge clk ) begin
 		if (rst)begin
@@ -30,23 +29,26 @@ module IF (
 			try_stall <= `False_v;
 			bj_stall <= `False_v;
 		end
-		else if(rdy) begin
-			if (~stall[0]) begin
-				if (inst[6] & ~bj_stall)begin
-					ram_inst_re <= `False_v;
-					bj_stall <= `True_v;
-				end
-				else if (use_npc) begin
-					ram_inst_re <= `True_v;
-					try_stall <= ~try_stall;
-					bj_stall <= `False_v;
-				end
-				else begin
-					ram_inst_re <= `True_v;
-					try_stall <= ~try_stall;
-					bj_stall <= `False_v;
-				end
+		else if(rdy & ~stall[0]) begin
+			if (inst[6] & ~bj_stall)begin
+				ram_inst_re <= `False_v;
+				bj_stall <= `True_v;
 			end
+			else if (use_npc) begin
+				ram_inst_re <= `True_v;
+				try_stall <= ~try_stall;
+				bj_stall <= `False_v;
+			end
+			else begin
+				ram_inst_re <= `True_v;
+				try_stall <= ~try_stall;
+				bj_stall <= `False_v;
+			end
+		end
+		else begin
+			ram_inst_re <= ram_inst_re;
+			try_stall <= try_stall;
+			bj_stall <= bj_stall;
 		end
 	end
 
@@ -55,17 +57,19 @@ module IF (
 			pc <= -4;
 			ram_inst_addr <= 32'hffffffff;
 		end
-		else if(rdy) begin
-			if (~stall[0] & (~inst[6] | bj_stall)) begin
-				if (use_npc) begin
-					pc <= npc_addr;
-					ram_inst_addr <= npc_addr;
-				end
-				else begin
-					pc <= pcp4;
-					ram_inst_addr <= pcp4;
-				end
+		else if(rdy & ~stall[0] & (~inst[6] | bj_stall)) begin
+			if (use_npc) begin
+				pc <= npc_addr;
+				ram_inst_addr <= npc_addr;
 			end
+			else begin
+				pc <= pcp4;
+				ram_inst_addr <= pcp4;
+			end
+		end
+		else begin
+			pc <= pc;
+			ram_inst_addr <= ram_inst_addr;
 		end
 	end
 
@@ -80,6 +84,7 @@ module IF (
 					inst <= ram_inst;
 				end
 				else begin
+					rst_stall <= rst_stall;
 					inst <= `ZeroWord;
 				end
 			end

@@ -3,9 +3,9 @@
 // port modification allowed for debugging purposes
 
 module cpu(
-    (* mark_debug="true" *)input  wire                 clk_in,			// system clock signal
-    (* mark_debug="true" *)input  wire                 rst_in,			// reset signal
-	(* mark_debug="true" *)input  wire				   rdy_in,			// ready signal, pause cpu when low
+    input  wire                 clk_in,			// system clock signal
+    input  wire                 rst_in,			// reset signal
+	input  wire				   rdy_in,			// ready signal, pause cpu when low
 
     input  wire [ 7:0]          mem_din,		// data input bus
     output wire [ 7:0]          mem_dout,		// data output bus
@@ -15,7 +15,10 @@ module cpu(
 	output wire [31:0]			dbgreg_dout		// cpu register output (debugging demo)
 );
 
-assign dbgreg_dout = 32'h00001000;
+assign dbgreg_dout = 32'h00030000;
+
+wire clk_out1, clk_out2;
+
 
 // implementation goes here
 
@@ -30,15 +33,15 @@ assign dbgreg_dout = 32'h00001000;
 // - 0x30004 write: indicates program stop (will output '\0' through uart tx)
 
 //IF->IFID->ID
-(* mark_debug="true" *)wire[`RomAddrBus]	if_pc;
-(* mark_debug="true" *)wire[`InstBus]		if_inst;
+wire[`RomAddrBus]	if_pc;
+wire[`InstBus]		if_inst;
 wire                if_bj_stall;
 wire[`RomAddrBus]	id_pc;
 wire[`InstBus]		id_inst;
 
 //ID->IF(new pc for J and B)
-(* mark_debug="true" *)wire                use_npc;
-(* mark_debug="true" *)wire[31:0]          npc_addr;
+wire                use_npc;
+wire[31:0]          npc_addr;
 
 //ID->REGFile->ID
 wire 				reg_re1;
@@ -117,7 +120,7 @@ wire                ram_acc_busy;
 wire                ram_ctrl_inst_re;
 wire[31:0]          ram_ctrl_inst_addr;
 wire[31:0]          ram_ctrl_inst_data;
-wire                ram_ctrl_inst_busy;
+(* mark_debug="true" *)wire                ram_ctrl_inst_busy;
 wire                ram_ctrl_ma_re;
 wire                ram_ctrl_ma_we;
 wire[31:0]          ram_ctrl_ma_addr;

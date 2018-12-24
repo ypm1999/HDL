@@ -21,7 +21,7 @@ module Memory_Accesser (
 	);
 	reg [7:0] 			tmp[0:2];
 	reg [2:0] 			cnt;
-	reg [3:0] 			sta;
+	(*MARK_DEBUG="TRUE"*)reg [3:0] 			sta;
 
 
 	always @ ( posedge clk ) begin
@@ -154,18 +154,18 @@ module Memory_Ctrl (
     input  wire                 rst,
 	input  wire					rdy,
 
-	(* mark_debug="true" *)input wire 					inst_re,		//instruction read enable
-	input wire [31:0]			inst_addr,		//instruction read address
-	output reg [31:0]			inst_data,		//instruction data read from ram
-	(* mark_debug="true" *)output reg 					inst_busy,		//instruction reading busy signal
+	(*MARK_DEBUG="TRUE"*)input wire 					inst_re,		//instruction read enable
+	(*MARK_DEBUG="TRUE"*)input wire [31:0]			inst_addr,		//instruction read address
+	(*MARK_DEBUG="TRUE"*)output reg [31:0]			inst_data,		//instruction data read from ram
+	(*MARK_DEBUG="TRUE"*)output reg 					inst_busy,		//instruction reading busy signal
 
-	(* mark_debug="true" *)input wire 					mem_we,
-	(* mark_debug="true" *)input wire 					mem_re,			//mem read enable
+	input wire 					mem_we,
+	input wire 					mem_re,			//mem read enable
 	input wire [31:0]			mem_addr,		//mem read address
 	input wire [2:0] 			mem_width,
 	input wire [31:0]			mem_wdata,
 	output reg [31:0]			mem_rdata,		//mem data read from ram
-	(* mark_debug="true" *)output reg 					mem_busy,		//mem reading busy signal
+	output reg 					mem_busy,		//mem reading busy signal
 
 	input wire 					ram_busy,		//following is wires to ram
 	input wire [31:0] 			ram_rdata,
@@ -177,7 +177,7 @@ module Memory_Ctrl (
 	output reg [31:0]			ram_wdata
 	);
 
-	reg [ 2:0] 	sta;
+	(*MARK_DEBUG="TRUE"*)reg [ 2:0] 	sta;
 	reg 		mem_work, inst_work;
 
 	always @ ( posedge clk ) begin

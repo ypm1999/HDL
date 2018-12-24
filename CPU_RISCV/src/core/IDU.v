@@ -8,7 +8,7 @@ module IF_ID (
 	input wire[`InstAddrBus]	if_pc,
 	input wire[`InstBus] 		if_inst,
 	input wire 					bj_stall,
-	input wire[4:0] 			stall,
+	(*MARK_DEBUG="TRUE"*) input wire[4:0] 			stall,
 
 
 	output reg[`InstAddrBus]	id_pc,
@@ -101,6 +101,12 @@ module ID (
 				{waddr, aluop} <= inst[11:0];
 			end
 		end
+		else begin
+			waddr <= waddr;
+			aluop <= aluop;
+			funct <= funct;
+		end
+
 	end
 
 	always @ ( * ) begin
@@ -160,6 +166,13 @@ module ID (
 				end
 			endcase
 		end
+		else begin
+			we <= we;
+			ma_we <= ma_we;
+			ma_re <= ma_re;
+			ma_width <= ma_width;
+			alusel <= alusel;
+		end
 	end
 
 	wire [31:0] immu, immj, immi, immb, imms, immr;
@@ -190,6 +203,8 @@ module ID (
 				default: imm <= immi;//6'b110011 : //6'b000001 :
 			endcase
 		end
+		else
+		 	imm <= imm;
 	end
 
 	always @ ( * ) begin
@@ -212,6 +227,12 @@ module ID (
 				re1 <= `True_v;
 			end
 		end
+		else begin
+			re1 <= re1;
+			re2 <= re2;
+			raddr1 <= raddr1;
+			raddr2 <= raddr2;
+		end
 	end
 	always @ ( * ) begin
 		if (rst == `RstEnable)
@@ -226,6 +247,8 @@ module ID (
 					reg1 <= rdata1;
 			end
 		end
+		else
+			reg1 <= reg1;
 	end
 
 	always @ ( * ) begin
@@ -241,6 +264,8 @@ module ID (
 					reg2 <= rdata2;
 			end
 		end
+		else
+			reg2 <= reg2;
 	end
 	assign sign_lt = ((reg1[31] & ~reg2[31])
 					| (reg1[31] & reg2[31] & (~reg1 + 1 > ~reg2 + 1))
@@ -261,6 +286,8 @@ module ID (
 			else
 				use_npc <= `False_v;
 		end
+		else
+			use_npc <= use_npc;
 	end
 
 	wire[31:0] 		npc1, npc2;
@@ -278,6 +305,8 @@ module ID (
 			else
 				npc_addr <= npc2;
 		end
+		else
+			npc_addr <= npc_addr;
 	end
 
 	always @ ( * ) begin
@@ -292,6 +321,8 @@ module ID (
 			else
 				data1 <= reg1;
 		end
+		else
+			data1 <= data1;
 	end
 
 	always @ ( * ) begin
@@ -313,6 +344,10 @@ module ID (
 					data2 <= (re2) ? reg2 : imm;
 				extra_data <= imm;
 			end
+		end
+		else begin
+			data2 <= data2;
+			extra_data = extra_data;
 		end
 	end
 

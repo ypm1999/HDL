@@ -1,4 +1,3 @@
-`timescale 1ps/1ps
 /***************************************************************************************************
 *
 *  Copyright (c) 2012, Brian Bennett
@@ -60,7 +59,6 @@ assign dout_b = ram[q_addr_b];
 endmodule
 
 // Single port RAM with synchronous read.
-
 module single_port_ram_sync
 #(
   parameter ADDR_WIDTH = 6,
@@ -79,11 +77,9 @@ reg [ADDR_WIDTH-1:0] q_addr_a;
 
 always @(posedge clk)
   begin
-    if (we) begin
-        //$display("write::%h < %h", addr_a, din_a);
+    if (we)
         ram[addr_a] <= din_a;
-    end
-     q_addr_a <= addr_a;
+    q_addr_a <= addr_a;
   end
 
 assign dout_a = ram[q_addr_a];
@@ -94,7 +90,7 @@ initial begin
   for (i=0;i<2**ADDR_WIDTH;i=i+1) begin
     ram[i] = 0;
   end
-  $readmemh("E:/code/HDL/CPU_RISCV/test/test.data", ram); // add test.data to vivado project or specify a valid file path
+  $readmemh("test.data", ram); // add test.data to vivado project or specify a valid file path
 end
 
 endmodule
