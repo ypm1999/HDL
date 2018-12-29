@@ -3,7 +3,7 @@
 
 module riscv_top
 #(
-	parameter SIM = 0						// whether in simulation
+	parameter SIM = 1						// whether in simulation
 )
 (
 	input wire 			EXCLK,
@@ -23,20 +23,20 @@ reg rst_delay;
 wire clk;
 
 // assign EXCLK (or your own clock module) to clk
-wire clk_out1, clk_out2;
-clk_wiz_0 PLL
- (
-  // Clock out ports
-  .clk_out1(clk_out1),     // output clk_out1
-  .clk_out2(clk_out2),     // output clk_out2
-  // Status and control signals
-  .reset(rst_in), // input reset
-  .locked(~rdy),       // output locked
- // Clock in ports
-  .clk_in1(EXCLK)
-  );      // input clk_in1
-
-assign clk = clk_out1;
+assign clk = EXCLK;
+// wire clk_out1, clk_out2;
+// clk_wiz_0 PLL
+//  (
+//   // Clock out ports
+//   .clk_out1(clk_out1),     // output clk_out1
+//   .clk_out2(clk_out2),     // output clk_out2
+//   // Status and control signals
+//   .reset(rst_in), // input reset
+//   //.locked(~rdy),       // output locked
+//  // Clock in ports
+//   .clk_in1(EXCLK)
+//   );      // input clk_in1
+//assign clk = clk_out1;
 
 always @(posedge clk or posedge btnC)
 begin

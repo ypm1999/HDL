@@ -141,30 +141,9 @@ Ctrl ctrl0(
     .rdy(rdy_in),
 
     .if_stall_req(if_stall_req),
-	.id_stall_req(id_stall_req),
-	.ex_stall_req(ex_stall_req),
 	.ma_stall_req(ma_stall_req),
 
 	.stall_cmd(stall_cmd)
-    );
-
-Memory_Accesser ram_accesser0(
-    .clk(clk_in),
-    .rst(rst_in),
-    .rdy(rdy_in),
-
-    .mem_din(mem_din),
-    .mem_dout(mem_dout),
-    .mem_a(mem_a),
-    .mem_wr(mem_wr),
-
-    .re(ram_acc_re),
-    .we(ram_acc_we),
-    .width(ram_acc_width),
-    .ram_addr(ram_acc_addr),
-    .ram_wdata(ram_acc_wdata),
-    .ram_rdata(ram_acc_rdata),
-    .busy(ram_acc_busy)
     );
 
 Memory_Ctrl ram_ctrl0(
@@ -185,14 +164,10 @@ Memory_Ctrl ram_ctrl0(
     .mem_rdata(ram_ctrl_ma_rdata),
     .mem_busy(ram_ctrl_ma_busy),
 
-    .ram_busy(ram_acc_busy),
-    .ram_rdata(ram_acc_rdata),
-
-    .ram_we(ram_acc_we),
-    .ram_re(ram_acc_re),
-    .ram_addr(ram_acc_addr),
-    .ram_width(ram_acc_width),
-    .ram_wdata(ram_acc_wdata)
+    .ram_din(mem_din),
+    .ram_dout(mem_dout),
+    .ram_wr(mem_wr),
+    .ram_a(mem_a)
     );
 
 IF if0(
@@ -209,7 +184,6 @@ IF if0(
 
 	.pc(if_pc),
 	.inst(if_inst),
-    .bj_stall(if_bj_stall),
 	.ram_inst_re(ram_ctrl_inst_re),
 	.ram_inst_addr(ram_ctrl_inst_addr),
 
@@ -223,7 +197,6 @@ IF_ID if_id0(
 
 	.if_pc(if_pc),
 	.if_inst(if_inst),
-    .bj_stall(if_bj_stall),
 
     .stall(stall_cmd),
 
@@ -269,9 +242,7 @@ ID id0(
     .ma_width(id_ma_width),
 
     .use_npc(use_npc),
-	.npc_addr(npc_addr),
-
-    .stall_req(id_stall_req)
+	.npc_addr(npc_addr)
 	);
 
 RegFile regfile0(
@@ -350,9 +321,7 @@ EX ex0(
     .ma_re(ex_ma_re_out),
     .ma_width(ex_ma_width_out),
     .ma_addr(ex_ma_addr_out),
-    .ma_wdata(ex_ma_wdata_out),
-
-    .stall_req(ex_stall_req)
+    .ma_wdata(ex_ma_wdata_out)
 	);
 
 EX_MA ex_ma0(

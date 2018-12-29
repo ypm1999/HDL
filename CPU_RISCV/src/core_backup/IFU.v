@@ -2,21 +2,21 @@
 
 module IF (
 	input wire 				clk,
-	input wire 				rst,
-	input wire 				rdy,
+	(*MARK_DEBUG="TRUE"*) input wire 				rst,
+	(*MARK_DEBUG="TRUE"*) input wire 				rdy,
 
-	input wire 				use_npc,
+	 input wire 				use_npc,
 	input wire[31:0]		npc_addr,
-	input wire[31:0]		ram_inst,
-	input wire 				ram_inst_busy,
+	(*MARK_DEBUG="TRUE"*) input wire[31:0]		ram_inst,
+	(*MARK_DEBUG="TRUE"*) input wire 				ram_inst_busy,
 	input wire[4:0] 		stall,
 
-	output reg[31:0] 		pc,
-	output reg[31:0]		inst,
-	output reg 				ram_inst_re,
-	output reg[31:0]		ram_inst_addr,
+	(*MARK_DEBUG="TRUE"*)output reg[31:0] 		pc,
+	(*MARK_DEBUG="TRUE"*)output reg[31:0]		inst,
+	(*MARK_DEBUG="TRUE"*)output reg 				ram_inst_re,
+	(*MARK_DEBUG="TRUE"*)output reg[31:0]		ram_inst_addr,
 
-	output reg 				stall_req
+	(*MARK_DEBUG="TRUE"*)output reg 				stall_req
 	);
 
 	reg [1:0] 			sta;

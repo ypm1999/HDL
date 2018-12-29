@@ -44,7 +44,7 @@ module RegFile(
 	end
 
 	always @ ( * ) begin
-		if (rst)
+		if (rst == `RstEnable)
 			rdata2 <= `ZeroWord;
 		else if(rdy) begin
 			if (re2 && raddr2 != 5'b00000) begin

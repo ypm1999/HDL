@@ -104,7 +104,9 @@ module EX (
 	output reg 					ma_re,
 	output reg[ 2:0]			ma_width,
 	output reg[31:0]			ma_addr,
-	output reg[31:0]			ma_wdata
+	output reg[31:0]			ma_wdata,
+
+	output reg 					stall_req
 	);
 
 	reg [31:0] 					alu_out;

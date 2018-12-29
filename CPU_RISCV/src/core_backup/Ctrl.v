@@ -6,6 +6,8 @@ module Ctrl (
 	input wire 				rdy,
 
 	input wire 				if_stall_req,
+	input wire 				id_stall_req,
+	input wire 				ex_stall_req,
 	input wire 				ma_stall_req,
 
 	output reg[4:0] 		stall_cmd

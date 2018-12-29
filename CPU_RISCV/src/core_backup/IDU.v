@@ -74,7 +74,9 @@ module ID (
 	output reg[ 2:0]			ma_width,
 
 	output reg 					use_npc,
-	output reg[31:0]			npc_addr
+	output reg[31:0]			npc_addr,
+
+	output reg 					stall_req
 	);
 
 	reg [31:0]					reg1, reg2, imm;
@@ -82,7 +84,6 @@ module ID (
 	wire 						sign_lt, lt, eq;
 
 	always @ ( * ) begin
-
 		if (rst == `RstEnable)begin
 			waddr <= 5'b00000;
 			aluop <= 7'b0000000;
@@ -129,14 +130,24 @@ module ID (
 					ma_re <= `True_v;
 					ma_we <= `False_v;
 					alusel <= 3'b000;
-					ma_width <= inst[14:12];
+					if(inst[13])
+						ma_width <= 3'b100;
+					else if (inst[12])
+						ma_width <= {inst[14], 2'b10};
+					else
+						ma_width <= {inst[14], 2'b01};
 				end
 				6'b010001 :begin// S
 					we <= `False_v;
 					ma_re <= `False_v;
 					ma_we <= `True_v;
 					alusel <= 3'b000;
-					ma_width <= inst[14:12];
+					if(inst[13])
+						ma_width <= 3'b100;
+					else if (inst[12])
+						ma_width <= 3'b010;
+					else
+						ma_width <= 3'b001;
 				end
 				6'b001001, 6'b011001 :begin// I/R;
 					we <= `True_v;
@@ -154,13 +165,13 @@ module ID (
 				end
 			endcase
 		end
-		// else begin
-		// 	we <= we;
-		// 	ma_we <= ma_we;
-		// 	ma_re <= ma_re;
-		// 	ma_width <= ma_width;
-		// 	alusel <= alusel;
-		// end
+		else begin
+			we <= we;
+			ma_we <= ma_we;
+			ma_re <= ma_re;
+			ma_width <= ma_width;
+			alusel <= alusel;
+		end
 	end
 
 	wire [31:0] immu, immj, immi, immb, imms, immr;
