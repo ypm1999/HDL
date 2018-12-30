@@ -7,7 +7,7 @@ module IF_ID (
 
 	input wire[`InstAddrBus]	if_pc,
 	input wire[`InstBus] 		if_inst,
-	(*MARK_DEBUG="TRUE"*) input wire[4:0] 			stall,
+	input wire[4:0] 			stall,
 
 
 	output reg[`InstAddrBus]	id_pc,
@@ -26,7 +26,8 @@ module IF_ID (
 			end
 			else if (!stall[1])begin
 				id_pc <= if_pc;
-				//$display("pc:%h::%h", if_inst, if_pc);
+				// if (if_inst != `ZeroWord)
+				// 	$display("pc:%h::%h", if_inst, if_pc);
 				id_inst <= if_inst;
 			end
 		end
@@ -82,7 +83,6 @@ module ID (
 	wire 						sign_lt, lt, eq;
 
 	always @ ( * ) begin
-
 		if (rst == `RstEnable)begin
 			waddr <= 5'b00000;
 			aluop <= 7'b0000000;
@@ -104,7 +104,6 @@ module ID (
 			aluop <= aluop;
 			funct <= funct;
 		end
-
 	end
 
 	always @ ( * ) begin
@@ -116,33 +115,25 @@ module ID (
 			alusel <= 3'b000;
 		end
 		else if(rdy)  begin
+			we <= `True_v;
+			ma_we <= `False_v;
+			ma_re <= `False_v;
+			alusel <= 3'b000;
 			case(inst[6:1])
 				6'b011011, 6'b001011, 6'b110111, 6'b110011 :begin// U
-					we <= `True_v;
-					ma_we <= `False_v;
-					ma_re <= `False_v;
 					ma_width <= 3'b000;
-					alusel <= 3'b000;
 				end
 				6'b000001 :begin // I
-					we <= `True_v;
 					ma_re <= `True_v;
-					ma_we <= `False_v;
-					alusel <= 3'b000;
 					ma_width <= inst[14:12];
 				end
 				6'b010001 :begin// S
 					we <= `False_v;
-					ma_re <= `False_v;
 					ma_we <= `True_v;
-					alusel <= 3'b000;
 					ma_width <= inst[14:12];
 				end
 				6'b001001, 6'b011001 :begin// I/R;
-					we <= `True_v;
 					alusel <= inst[14:12];
-					ma_we <= `False_v;
-					ma_re <= `False_v;
 					ma_width <= 3'b000;
 				end
 				default: begin

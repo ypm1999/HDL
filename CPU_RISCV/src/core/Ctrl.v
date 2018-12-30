@@ -22,8 +22,6 @@ module Ctrl (
 				else
 					stall_cmd <= 5'b00000;
 			end
-		else
-			stall_cmd <= stall_cmd;
 	end
 
 endmodule // Ctrl

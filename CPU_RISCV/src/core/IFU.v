@@ -22,7 +22,7 @@ module IF (
 	reg [1:0] 			sta;
 
 	always @ ( posedge clk ) begin
-		if (rst == `RstEnable)begin
+		if (rst == `RstEnable) begin
 			sta = 2'b00;
 			pc <= -4;
 			ram_inst_re <= `False_v;
@@ -53,13 +53,21 @@ module IF (
 						stall_req <= `False_v;
 						ram_inst_re <= `False_v;
 						inst <= ram_inst;
-						sta = 2'b11;
+						if (ram_inst[6:4] == 3'b110)
+							sta = 2'b11;
+						else
+						 	sta = 2'b00;
 					end
 				end
 				2'b10:begin
 					sta <= 2'b01;
 				end
-				default : sta <= 2'b00;
+				default : begin
+					if (stall[0] == `False_v) begin
+						sta <= 2'b00;
+						inst <= `ZeroWord;
+					end
+				end
 			endcase
 		end
 	end

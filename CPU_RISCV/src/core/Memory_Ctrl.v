@@ -29,20 +29,19 @@ module Memory_Ctrl (
 	reg [31:0]	rdata;
 	reg [ 2:0] 	now, cnt;
 	reg [ 1:0] 	sta;
-	reg 		unsign;
+	reg 		unsign, mem_work, inst_work;
 	//wait command
 	//run read
 	//run write
 	//stall
 
-	always @ ( posedge clk, posedge rst ) begin
+	always @ ( posedge clk ) begin
 		if (rst)begin
 			sta <= 2'b00;
 			now <= 3'b000;
 			cnt <= 3'b000;
 			mem_busy <= `False_v;
 			inst_busy <= `False_v;
-			unsign <= `False_v;
 			ram_wr <= 1'b0;
 			ram_a <= `ZeroWord;
 			ram_dout <= `ZeroWord;
@@ -51,27 +50,17 @@ module Memory_Ctrl (
 		else if (rdy) begin
 			case (sta)
 				2'b00: begin
-					unsign <= mem_width[2];
 					ram_dout <= mem_wdata[7:0];
-					rdata <= `ZeroWord;
 					if (mem_we)begin
 						ram_a <= mem_addr;
 						ram_wr <= 1'b1;
 						now <= 3'b001;
-						case (mem_width[1:0])
-							2'b01, 2'b10: begin
-								mem_busy <= `True_v;
-								sta <= 2'b10;
-								cnt <= {1'b0, mem_width[1:0]} | 3'b001;
-							end
-							default: begin
-								mem_busy <= `False_v;
-								sta <= 2'b00;
-								cnt <= 3'b000;
-							end
-						endcase
+						mem_busy <= `True_v;
+						sta <= 2'b10;
+						cnt <= {mem_width[1:0], ~(mem_width[0] | mem_width[1])};
 					end
 					else if (mem_re) begin
+						mem_rdata <= `ZeroWord;
 						ram_a <= mem_addr;
 						ram_wr <= 1'b0;
 						now <= 3'b000;
@@ -85,6 +74,7 @@ module Memory_Ctrl (
 						endcase
 					end
 					else if (inst_re) begin
+						inst_data <= `ZeroWord;
 						ram_a <= inst_addr;
 						ram_wr <= 1'b0;
 						now <= 3'b000;
@@ -102,15 +92,22 @@ module Memory_Ctrl (
 					end
 				end
 				2'b01: begin
-					ram_a <= ram_a + 1;
+					if (now + 3'b001 < cnt)
+						ram_a <= ram_a + 1;
 					if (now)
-						rdata[{now - 3'b001, 3'b000}+:8] <= ram_din;
+						if (inst_busy)
+							inst_data[{now - 3'b001, 3'b000}+:8] <= ram_din;
+						else
+							mem_rdata[{now - 3'b001, 3'b000}+:8] <= ram_din;
 					else
 						rdata <= rdata;
 					if (now == cnt) begin
-						now = 3'b000;
-						mem_busy <= `False_v;
-						inst_busy <= `False_v;
+						now <= 3'b000;
+						cnt <= 3'b000;
+						if (inst_busy)
+							inst_busy <= `False_v;
+						else
+							mem_busy <= `False_v;
 						sta <= 2'b11;
 					end
 					else begin
@@ -121,14 +118,14 @@ module Memory_Ctrl (
 					end
 				end
 				2'b10: begin
-					ram_dout <= mem_wdata[{now, 3'b000}+:8];
-					ram_a <= ram_a + 1;
 					if (now == cnt) begin
 						now = 3'b000;
 						mem_busy <= `False_v;
-						sta <= 2'b00;
+						sta <= 2'b11;
 					end
 					else begin
+						ram_dout <= mem_wdata[{now, 3'b000}+:8];
+						ram_a <= ram_a + 1;
 						now = now + 3'b001;
 						mem_busy <= `True_v;
 						sta <= 2'b10;
@@ -140,7 +137,6 @@ module Memory_Ctrl (
 					cnt <= 3'b000;
 					mem_busy <= `False_v;
 					inst_busy <= `False_v;
-					unsign <= `False_v;
 					ram_wr <= 1'b0;
 					ram_a <= `ZeroWord;
 					ram_dout <= `ZeroWord;
@@ -150,24 +146,39 @@ module Memory_Ctrl (
 		end
 	end
 
-	always @ ( * ) begin
-		if (rst) begin
-			inst_data <= `ZeroWord;
-			mem_rdata <= `ZeroWord;
-		end
-		else if (rdy) begin
-			inst_data <= rdata;
-			if (unsign) begin
-				mem_rdata <= cnt[0] ? {{25{rdata[7]}}, rdata[6:0]} :
-									{{17{rdata[15]}},  rdata[14:0]};
-			end
-			else
-				mem_rdata <= rdata;
-		end
-		else begin
-			inst_data <= inst_data;
-			mem_rdata <= mem_rdata;
-		end
-	end
+	// reg [2:0] 	sta_inst, sta_mem;
+	// always @ ( * ) begin
+	// 	if (rst) begin
+	// 		inst_busy <= `False_v;
+	// 	end
+	// 	else if (rdy) begin
+	//
+	// 		if (sta != 2'b11 && inst_re)begin
+	// 			inst_busy <= `True_v;
+	// 		end
+	// 	end
+	// 	else begin
+	// 	end
+	// end
+	//
+	// always @ ( * ) begin
+	// 	if (rst) begin
+	// 		inst_data <= `ZeroWord;
+	// 		mem_rdata <= `ZeroWord;
+	// 	end
+	// 	else if (rdy) begin
+	// 		inst_data <= rdata;
+	// 		if (unsign) begin
+	// 			mem_rdata <= rdata;
+	// 		end
+	// 		else
+	// 			mem_rdata <= cnt[0] ? {{25{rdata[7]}}, rdata[6:0]} :
+	// 								{{17{rdata[15]}},  rdata[14:0]};
+	// 	end
+	// 	else begin
+	// 		inst_data <= inst_data;
+	// 		mem_rdata <= mem_rdata;
+	// 	end
+	// end
 
 endmodule // Memory_ctrl
