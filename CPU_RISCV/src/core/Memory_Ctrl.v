@@ -26,10 +26,9 @@ module Memory_Ctrl (
     output reg                 ram_wr			// write/read signal (1 for write)
 	);
 
-	reg [31:0]	rdata;
+	//reg [31:0]	rdata;
 	reg [ 2:0] 	now, cnt;
 	reg [ 1:0] 	sta;
-	reg 		unsign, mem_work, inst_work;
 	//wait command
 	//run read
 	//run write
@@ -45,7 +44,6 @@ module Memory_Ctrl (
 			ram_wr <= 1'b0;
 			ram_a <= `ZeroWord;
 			ram_dout <= `ZeroWord;
-			rdata <= `ZeroWord;
 		end
 		else if (rdy) begin
 			case (sta)
@@ -99,8 +97,6 @@ module Memory_Ctrl (
 							inst_data[{now - 3'b001, 3'b000}+:8] <= ram_din;
 						else
 							mem_rdata[{now - 3'b001, 3'b000}+:8] <= ram_din;
-					else
-						rdata <= rdata;
 					if (now == cnt) begin
 						now <= 3'b000;
 						cnt <= 3'b000;
@@ -140,7 +136,6 @@ module Memory_Ctrl (
 					ram_wr <= 1'b0;
 					ram_a <= `ZeroWord;
 					ram_dout <= `ZeroWord;
-					rdata <= `ZeroWord;
 				end
 			endcase
 		end

@@ -29,7 +29,7 @@
 
 module hci
 #(
-  parameter SYS_CLK_FREQ = 50000000,
+  parameter SYS_CLK_FREQ = 100000000,
   parameter RAM_ADDR_WIDTH = 17,
   parameter BAUD_RATE = 115200
 )
@@ -558,7 +558,7 @@ always @*
 
     endcase
     end
-
+    
   end
 
 assign active      = (q_state != S_DISABLED);

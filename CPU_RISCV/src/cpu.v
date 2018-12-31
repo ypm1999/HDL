@@ -15,10 +15,7 @@ module cpu(
 	output wire [31:0]			dbgreg_dout		// cpu register output (debugging demo)
 );
 
-assign dbgreg_dout = 32'h00030000;
-
-wire clk_out1, clk_out2;
-
+assign dbgreg_dout = 32'h00001000;
 
 // implementation goes here
 
@@ -107,20 +104,12 @@ wire 				wb_we_in;
 wire[`RegAddrBus]	wb_waddr_in;
 wire[`RegBus]		wb_wdata_in;
 
-//wire for ram_accesser0 (input & output)
-wire                ram_acc_re;
-wire                ram_acc_we;
-wire[ 2:0]          ram_acc_width;
-wire[31:0]          ram_acc_addr;
-wire[31:0]          ram_acc_rdata;
-wire[31:0]          ram_acc_wdata;
-wire                ram_acc_busy;
 
 //wire for ram_ctrl0 (input and output to outside)
 wire                ram_ctrl_inst_re;
 wire[31:0]          ram_ctrl_inst_addr;
 wire[31:0]          ram_ctrl_inst_data;
-(* mark_debug="true" *)wire                ram_ctrl_inst_busy;
+wire                ram_ctrl_inst_busy;
 wire                ram_ctrl_ma_re;
 wire                ram_ctrl_ma_we;
 wire[31:0]          ram_ctrl_ma_addr;
@@ -221,7 +210,6 @@ ID id0(
     .fwd_ma_waddr(ma_waddr_out),
     .fwd_ma_wdata(ma_wdata_out),
 
-	.aluop(id_aluop),
 	.alusel(id_alusel),
 	.funct(id_funct),
 
@@ -270,7 +258,6 @@ ID_EX id_ex0(
 	.rst(rst_in),
 	.rdy(rdy_in),
 
-	.id_opcode(id_aluop),
 	.id_alusel(id_alusel),
 	.id_funct(id_funct),
 	.id_data1(id_data1),
@@ -283,7 +270,6 @@ ID_EX id_ex0(
     .id_ma_width(id_ma_width),
     .stall(stall_cmd),
 
-	.ex_opcode(ex_aluop),
 	.ex_alusel(ex_alusel),
 	.ex_funct(ex_funct),
 	.ex_data1(ex_data1),
@@ -300,7 +286,6 @@ EX ex0(
 	.rst(rst_in),
 	.rdy(rdy_in),
 
-	.opcode(ex_aluop),
 	.alusel(ex_alusel),
 	.funct(ex_funct),
 	.data1(ex_data1),
@@ -323,47 +308,48 @@ EX ex0(
     .ma_addr(ex_ma_addr_out),
     .ma_wdata(ex_ma_wdata_out)
 	);
-
-EX_MA ex_ma0(
-	.clk(clk_in),
-	.rst(rst_in),
-	.rdy(rdy_in),
-
-	.ex_we(ex_we_out),
-	.ex_waddr(ex_waddr_out),
-	.ex_wdata(ex_wdata_out),
-    .ex_ma_we(ex_ma_we_out),
-    .ex_ma_re(ex_ma_re_out),
-    .ex_ma_width(ex_ma_width_out),
-    .ex_ma_addr(ex_ma_addr_out),
-    .ex_ma_wdata(ex_ma_wdata_out),
-    .stall(stall_cmd),
-
-	.ma_we(ma_we_in),
-	.ma_waddr(ma_waddr_in),
-	.ma_wdata(ma_wdata_in),
-    .ma_ma_we(ma_ma_we),
-    .ma_ma_re(ma_ma_re),
-    .ma_ma_width(ma_ma_width),
-    .ma_ma_addr(ma_ma_addr),
-    .ma_ma_wdata(ma_ma_wdata)
-	);
-
+//
+// EX_MA ex_ma0(
+// 	.clk(clk_in),
+// 	.rst(rst_in),
+// 	.rdy(rdy_in),
+//
+// 	.ex_we(ex_we_out),
+// 	.ex_waddr(ex_waddr_out),
+// 	.ex_wdata(ex_wdata_out),
+//     .ex_ma_we(ex_ma_we_out),
+//     .ex_ma_re(ex_ma_re_out),
+//     .ex_ma_width(ex_ma_width_out),
+//     .ex_ma_addr(ex_ma_addr_out),
+//     .ex_ma_wdata(ex_ma_wdata_out),
+//     .stall(stall_cmd),
+//
+// 	.ma_we(ma_we_in),
+// 	.ma_waddr(ma_waddr_in),
+// 	.ma_wdata(ma_wdata_in),
+//     .ma_ma_we(ma_ma_we),
+//     .ma_ma_re(ma_ma_re),
+//     .ma_ma_width(ma_ma_width),
+//     .ma_ma_addr(ma_ma_addr),
+//     .ma_ma_wdata(ma_ma_wdata)
+// 	);
+//
 
   MA ma0(
 	.clk(clk_in),
 	.rst(rst_in),
 	.rdy(rdy_in),
 
-	.we_in(ma_we_in),
-	.waddr_in(ma_waddr_in),
-	.wdata_in(ma_wdata_in),
+	.we_in(ex_we_out),
+	.waddr_in(ex_waddr_out),
+	.wdata_in(ex_wdata_out),
 
-    .ma_we(ma_ma_we),
-	.ma_re(ma_ma_re),
-	.ma_width(ma_ma_width),
-	.ma_addr(ma_ma_addr),
-	.ma_wdata(ma_ma_wdata),
+    .ma_we(ex_ma_we_out),
+	.ma_re(ex_ma_re_out),
+	.ma_width(ex_ma_width_out),
+	.ma_addr(ex_ma_addr_out),
+	.ma_wdata(ex_ma_wdata_out),
+    .stall(stall_cmd),
 
     .ram_we(ram_ctrl_ma_we),
     .ram_re(ram_ctrl_ma_re),

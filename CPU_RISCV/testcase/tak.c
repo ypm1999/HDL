@@ -8,9 +8,9 @@ int main(){
 	int a;
 	int b;
 	int c;
-	a= 6;
-	b= 18;
-	c= 12;
+	a=inl();
+	b=inl();
+	c=inl();
 	outlln(tak(a,b,c));
 	return 0;
 }

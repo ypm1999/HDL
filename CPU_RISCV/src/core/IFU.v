@@ -1,4 +1,5 @@
 `include "defines.v"
+//(* mark_debug="true" *)
 
 module IF (
 	input wire 				clk,
