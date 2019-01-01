@@ -1,13 +1,31 @@
 #include "io.h"
-int gcd(int x, int y) {
-  if (x%y == 0) return y;
-  else return gcd(y, x%y);
-}
-
+int f[2801];
 int main() {
-    outlln(gcd(10,1));
-    outlln(gcd(34986,3087));
-    outlln(gcd(2907,1539));
+	int a = 10000;
+	int b = 0;
+	int c = 2800;
+	int d = 0;
+	int e = 0;
+	int g = 0;
 
-    return 0;
+	for (;b-c!=0;) 
+		f[b++] = a/5;
+	for (;; e = d%a){
+		d = 0;
+		g = c*2;
+		if (g==0) break;
+		
+		for (b=c;;d=d*b){
+			d=d+f[b]*a;
+			f[b] = d%--g;
+			d=d/g--;
+			if (--b==0) break;
+		}
+		
+		c = c-14;
+		outl(e+d/a);
+	}
+	
+  print("\n");
+  return 0;
 }

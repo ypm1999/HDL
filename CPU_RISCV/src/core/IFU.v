@@ -24,11 +24,11 @@ module IF (
 	reg [136:0]			icache[31:0];
 
 	wire [16:0] npc;
-	wire [4:0] line;
+	wire [136:0] line;
 	wire [3:0] bb;
 	wire [7:0] tag;
 	assign npc = use_npc ? npc_addr : pc + 17'h4;
-	assign line = npc[8:4];
+	assign line = icache[npc[8:4]];
 	assign bb = npc[3:0];
 	assign tag = npc[16:9];
 
@@ -50,11 +50,14 @@ module IF (
 					if (!stall[0]) begin
 						pc <= npc;
 						ram_inst_addr <= {npc[16:4], 4'b0000};
-						inst <= icache[line][{bb, 3'b000}+:32];
-						if (icache[line][136] && !(icache[line][135:128] ^ tag))begin
+						inst <= line[{bb, 3'b000}+:32];
+						if (line[136] && !(line[135:128] ^ tag))begin
 							stall_req <= `False_v;
 							ram_inst_re <= `False_v;
-							sta <= 2'b11;
+							if (line[{bb, 3'b110}] || line[{bb, 3'b100}+:3] == 3'b000)
+								sta <= 2'b11;
+							else
+								sta <= 2'b00;
 						end
 						else begin
 							stall_req <= `True_v;
@@ -81,7 +84,10 @@ module IF (
 					stall_req <= `True_v;
 					ram_inst_re <= `True_v;
 					inst <= `ZeroWord;
-					sta <= 2'b01;
+					if (ram_inst_busy)
+						sta <= 2'b01;
+					else
+						sta <= 2'b10;
 				end
 				default : begin
 					stall_req <= `False_v;
