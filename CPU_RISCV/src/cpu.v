@@ -108,7 +108,7 @@ wire[`RegBus]		wb_wdata_in;
 //wire for ram_ctrl0 (input and output to outside)
 wire                ram_ctrl_inst_re;
 wire[31:0]          ram_ctrl_inst_addr;
-wire[31:0]          ram_ctrl_inst_data;
+wire[127:0]          ram_ctrl_inst_data;
 wire                ram_ctrl_inst_busy;
 wire                ram_ctrl_ma_re;
 wire                ram_ctrl_ma_we;
@@ -308,32 +308,6 @@ EX ex0(
     .ma_addr(ex_ma_addr_out),
     .ma_wdata(ex_ma_wdata_out)
 	);
-//
-// EX_MA ex_ma0(
-// 	.clk(clk_in),
-// 	.rst(rst_in),
-// 	.rdy(rdy_in),
-//
-// 	.ex_we(ex_we_out),
-// 	.ex_waddr(ex_waddr_out),
-// 	.ex_wdata(ex_wdata_out),
-//     .ex_ma_we(ex_ma_we_out),
-//     .ex_ma_re(ex_ma_re_out),
-//     .ex_ma_width(ex_ma_width_out),
-//     .ex_ma_addr(ex_ma_addr_out),
-//     .ex_ma_wdata(ex_ma_wdata_out),
-//     .stall(stall_cmd),
-//
-// 	.ma_we(ma_we_in),
-// 	.ma_waddr(ma_waddr_in),
-// 	.ma_wdata(ma_wdata_in),
-//     .ma_ma_we(ma_ma_we),
-//     .ma_ma_re(ma_ma_re),
-//     .ma_ma_width(ma_ma_width),
-//     .ma_ma_addr(ma_ma_addr),
-//     .ma_ma_wdata(ma_ma_wdata)
-// 	);
-//
 
   MA ma0(
 	.clk(clk_in),
@@ -366,30 +340,15 @@ EX ex0(
     .stall_req(ma_stall_req)
     );
 
-
-
-MA_WB ma_wb0(
-	.clk(clk_in),
-	.rst(rst_in),
-    .rdy(rdy_in),
-
-	.ma_we(ma_we_out),
-	.ma_waddr(ma_waddr_out),
-	.ma_wdata(ma_wdata_out),
-    .stall(stall_cmd),
-
-	.wb_we(wb_we_in),
-	.wb_waddr(wb_waddr_in),
-	.wb_wdata(wb_wdata_in)
-	);
-
   WB wb0(
+    .clk(clk_in),
 	.rst(rst_in),
 	.rdy(rdy_in),
 
-	.we_in(wb_we_in),
-	.waddr_in(wb_waddr_in),
-	.wdata_in(wb_wdata_in),
+	.we_in(ma_we_out),
+	.waddr_in(ma_waddr_out),
+	.wdata_in(ma_wdata_out),
+    .stall(stall_cmd),
 
 	.we_out(reg_we),
 	.waddr_out(reg_waddr),

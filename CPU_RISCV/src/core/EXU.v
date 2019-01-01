@@ -110,10 +110,10 @@ module EX (
 	assign SRL = (data1 >> data2[4:0]) | ({32{funct & data1[31]}} << (6'd32-data2[4:0]));
 
 	always @ ( * ) begin
-		if(rst | ~rdy) begin
+		if(rst == `RstEnable) begin
 			alu_out <= `ZeroWord;
 		end
-		else begin
+		else if(rdy) begin
 			case (alusel)
 				`AND_SEL: alu_out <= AND;
 				`OR_SEL: alu_out <= OR;

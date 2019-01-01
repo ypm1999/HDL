@@ -28,7 +28,7 @@ module IF_ID (
 			end
 			else if (!stall[1])begin
 				id_pc <= if_pc;
-				$display("pc:%h::%h", if_inst, if_pc);
+				$display("pc:%h::%h", if_pc, if_inst);
 				id_inst <= if_inst;
 			end
 			// $display("IF_ID:: inst:%d", if_inst);

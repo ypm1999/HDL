@@ -23,38 +23,23 @@ module RegFile(
 
 	always @ ( posedge clk ) begin
 		if (~rst & rdy & we & (waddr != 5'b00000))begin
-			//$display("p_write:%h <= %d", waddr, wdata);
 			registers[waddr] <= wdata;
 		end
 	end
 
 	always @ ( * ) begin
-		if (rst)
+		if (rst | ~rdy | !re1 | raddr1 == 5'b00000)
 			rdata1 <= `ZeroWord;
-		else if(rdy) begin
-			if (re1  && raddr1 != 5'b00000)begin
-				if (we && waddr == raddr1)
-					rdata1 <= wdata;
-				else
-					rdata1 <= registers[raddr1];
-			end
-			else
-				rdata1 <= `ZeroWord;
+		else begin
+			rdata1 <= (we && waddr == raddr1) ? wdata : registers[raddr1];
 		end
 	end
 
 	always @ ( * ) begin
-		if (rst)
+		if (rst | ~rdy | !re2 | raddr2 == 5'b00000)
 			rdata2 <= `ZeroWord;
-		else if(rdy) begin
-			if (re2 && raddr2 != 5'b00000) begin
-				if (we&& waddr == raddr2)
-					rdata2 <= wdata;
-				else
-					rdata2 <= registers[raddr2];
-			end
-			else
-				rdata2 <= `ZeroWord;
+		else begin
+			rdata2 <= (we && waddr == raddr2) ? wdata : registers[raddr2];
 		end
 	end
 

@@ -5,30 +5,30 @@ module IF_ID (
 	input wire 					rst,
 	input wire 					rdy,
 
-	input wire[`InstAddrBus]	if_pc,
+	input wire[16:0]			if_pc,
 	input wire[`InstBus] 		if_inst,
 	input wire[4:0] 			stall,
 
 
-	output reg[`InstAddrBus]	id_pc,
+	output reg[16:0]			id_pc,
 	output reg[`InstBus]		id_inst
 	);
 
 	always @ ( posedge clk ) begin
-		if (rst != `RstDisable)begin
+		if (rst)begin
 			id_pc <= `ZeroWord;
 			id_inst <= `ZeroWord;
 		end
-		else if(rdy)begin
-			if ((stall[0] & !stall[1])) begin
+		else if(rdy & ~stall[1])begin
+			if (stall[0]) begin
 				id_pc <= `ZeroWord;
 				id_inst	 <= `ZeroWord;
 			end
-			else if (!stall[1])begin
+			else begin
 				id_pc <= if_pc;
-				// if (if_inst != `ZeroWord)
-				// 	$display("pc:%h::%h", if_inst, if_pc);
 				id_inst <= if_inst;
+				// if (if_inst != `ZeroWord)
+				// 	$display("pc:%h::%h", if_pc, if_inst);
 			end
 		end
 	end
@@ -41,7 +41,7 @@ module ID (
 	input wire 					rst,
 	input wire 					rdy,
 
-	input wire[`InstAddrBus]	pc,
+	input wire[16:0]			pc,
 	input wire[`InstBus] 		inst,
 
 	input wire[`RegBus]			rdata1,
@@ -74,7 +74,7 @@ module ID (
 	output reg[ 2:0]			ma_width,
 
 	output reg 					use_npc,
-	output reg[31:0]			npc_addr
+	output reg[16:0]			npc_addr
 	);
 
 	reg [31:0]					reg1, reg2, imm;
@@ -94,7 +94,6 @@ module ID (
 			end
 			else begin
 				funct <= 1'b0;
-
 			end
 		end
 	end
@@ -107,7 +106,7 @@ module ID (
 			ma_width <= 3'b000;
 			alusel <= 3'b000;
 		end
-		else if(rdy)  begin
+		else if(rdy) begin
 			we <= `True_v;
 			ma_we <= `False_v;
 			ma_re <= `False_v;
@@ -138,13 +137,6 @@ module ID (
 				end
 			endcase
 		end
-		// else begin
-		// 	we <= we;
-		// 	ma_we <= ma_we;
-		// 	ma_re <= ma_re;
-		// 	ma_width <= ma_width;
-		// 	alusel <= alusel;
-		// end
 	end
 
 	wire [31:0] immu, immj, immi, immb, imms, immr;
@@ -180,32 +172,46 @@ module ID (
 	always @ ( * ) begin
 		if (rst | ~rdy)begin
 			re1 <= `False_v;
-			re2 <= `False_v;
 			raddr1 <= 5'b00000;
+		end
+		else begin
+			re1 <= `True_v;
+			raddr1 <= (inst[2] & ~(inst[6] & ~inst[3])) ? 5'b00000 : inst[19:15];
+		end
+	end
+
+	always @ ( * ) begin
+		if (rst | ~rdy)begin
+			re2 <= `False_v;
 			raddr2 <= 5'b00000;
 		end
 		else begin
 			if (inst[2] & ~(inst[6] & ~inst[3])) begin
-				re1 <= `True_v;
 				re2 <= `False_v;
-				raddr1 <= 5'b00000;
 				raddr2 <= 5'b00000;
 			end
 			else begin
-				{raddr2, raddr1} <= inst[24:15];
+				raddr2 <= inst[24:20];
 				re2 <= inst[1] & inst[5];
-				re1 <= `True_v;
 			end
 		end
 	end
+
+	wire 	reg1_use_ex, reg2_use_ex, reg1_use_ma, reg2_use_ma;
+	assign reg1_use_ex = fwd_ex_we & (fwd_ex_waddr == raddr1) & (fwd_ex_waddr != 5'b00000);
+	assign reg2_use_ex = fwd_ex_we & (fwd_ex_waddr == raddr2) & (fwd_ex_waddr != 5'b00000);
+	assign reg1_use_ma = fwd_ma_we & (fwd_ma_waddr == raddr1) & (fwd_ma_waddr != 5'b00000);
+	assign reg2_use_ma = fwd_ma_we & (fwd_ma_waddr == raddr2) & (fwd_ma_waddr != 5'b00000);
+
+
 	always @ ( * ) begin
 		if (rst | ~rdy)
 			reg1 <= `ZeroWord;
 		else begin
-			if (re1 == `True_v) begin
-				if (fwd_ex_we == `True_v && fwd_ex_waddr == raddr1 && fwd_ex_waddr != 5'b00000)
+			if (re1) begin
+				if (reg1_use_ex)
 					reg1 <= fwd_ex_wdata;
-				else if(fwd_ma_we == `True_v && fwd_ma_waddr == raddr1 && fwd_ma_waddr != 5'b00000)
+				else if(reg1_use_ma)
 					reg1 <= fwd_ma_wdata;
 				else
 					reg1 <= rdata1;
@@ -217,10 +223,10 @@ module ID (
 		if (rst | ~rdy)
 			reg2 <= `ZeroWord;
 		else  begin
-			if (re2 == `True_v)begin
-				if (fwd_ex_we == `True_v && fwd_ex_waddr == raddr2 && fwd_ex_waddr != 5'b00000)
+			if (re2)begin
+				if (reg2_use_ex)
 					reg2 <= fwd_ex_wdata;
-				else if(fwd_ma_we == `True_v && fwd_ma_waddr == raddr2 && fwd_ma_waddr != 5'b00000)
+				else if(reg2_use_ma)
 					reg2 <= fwd_ma_wdata;
 				else
 					reg2 <= rdata2;
@@ -229,32 +235,24 @@ module ID (
 	end
 
 	assign sign_lt = $signed(reg1) < $signed(reg2);
-	// assign sign_lt = ((reg1[31] & ~reg2[31])
-	// 				| (reg1[31] & reg2[31] & (~reg1 + 1 > ~reg2 + 1))
-	// 				| (~reg1[31] & ~reg2[31] & (reg1 < reg2)));
 	assign eq = reg1 == reg2;
 	assign lt = reg1 < reg2;
 
 	always @ ( * ) begin
-		if (rst)begin
-			use_npc <= `False_v;
-		end
-		else if(rdy) begin
-			use_npc <= inst[6] & (inst[2] | (~inst[14] & (eq ^ inst[12]))
-						| (~inst[13] & inst[14] & (sign_lt ^ inst[12]))
-						| (inst[13] & inst[14] & (lt ^ inst[12])));
-		end
+		use_npc <= ~(rst | ~rdy) & inst[6] & (inst[2] | (~inst[14] & (eq ^ inst[12]))
+					| (~inst[13] & inst[14] & (sign_lt ^ inst[12]))
+					| (inst[13] & inst[14] & (lt ^ inst[12])));
 	end
 
-	wire[31:0] 		npc1, npc2;
-	assign npc1 = imm + reg1;
-	assign npc2 = imm + pc;
+	wire[16:0] 		npc1, npc2;
+	assign npc1 = imm[16:0] + reg1[16:0];
+	assign npc2 = imm[16:0] + pc;
 
 	always @ ( * ) begin
 		if (rst == `RstEnable)
 			npc_addr <= `ZeroWord;
 		else
-			npc_addr = (inst[3:2] == 2'b01) ? {npc1[31:1], 1'b0} : npc2;
+			npc_addr = (inst[3:2] == 2'b01) ? {npc1[16:1], 1'b0} : npc2;
 	end
 
 	always @ ( * ) begin

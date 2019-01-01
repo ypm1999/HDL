@@ -40,12 +40,14 @@ endmodule // MEM_WB
 
 
 module WB (
+	input wire 					clk,
 	input wire 					rst,
 	input wire 					rdy,
 
 	input wire 					we_in,
 	input wire[`RegAddrBus]		waddr_in,
 	input wire[`RegBus]			wdata_in,
+	input wire[4:0] 			stall,
 
 
 	output reg 					we_out,
@@ -54,13 +56,13 @@ module WB (
 
 	);
 
-	always @ ( * ) begin
-		if (rst == `RstEnable)begin
+	always @ ( posedge clk ) begin
+		if (rst | ~rdy | stall[3] | stall[4])begin
 			we_out <= `False_v;
 			waddr_out <= 5'b00000;
 			wdata_out <= 32'h00000000;
 		end
-		else if(rdy) begin
+		else begin
 			we_out <= we_in;
 			waddr_out <= waddr_in;
 			wdata_out <= wdata_in;
