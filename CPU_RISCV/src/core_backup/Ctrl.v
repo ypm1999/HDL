@@ -6,8 +6,6 @@ module Ctrl (
 	input wire 				rdy,
 
 	input wire 				if_stall_req,
-	input wire 				id_stall_req,
-	input wire 				ex_stall_req,
 	input wire 				ma_stall_req,
 
 	output reg[4:0] 		stall_cmd
@@ -24,8 +22,6 @@ module Ctrl (
 				else
 					stall_cmd <= 5'b00000;
 			end
-		else
-			stall_cmd <= stall_cmd;
 	end
 
 endmodule // Ctrl

@@ -23,16 +23,16 @@ reg rst_delay;
 wire clk;
 
 // assign EXCLK (or your own clock module) to clk
-//assign clk = EXCLK;
-clk_wiz_0 instance_name
-   (
-    // Clock out ports
-    .clk_out1(clk),     // output clk_out1
-    // Status and control signals
-    .reset(0), // input reset
-//    .locked(locked),       // output locked
-   // Clock in ports
-    .clk_in1(EXCLK));      // input clk_in1
+assign clk = EXCLK;
+// clk_wiz_0 instance_name
+//    (
+//     // Clock out ports
+//     .clk_out1(clk),     // output clk_out1
+//     // Status and control signals
+//     .reset(0), // input reset
+// //    .locked(locked),       // output locked
+//    // Clock in ports
+//     .clk_in1(EXCLK));      // input clk_in1
 
 
 always @(posedge clk or posedge btnC)
