@@ -1,4 +1,5 @@
-#!/bin/bash -v
+#!/bin/bash 
+set -v
 sudo bash ./run_test_fpga.sh array_test1
 sudo bash ./run_test_fpga.sh array_test2
 sudo bash ./run_test_fpga.sh basicopt1

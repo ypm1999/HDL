@@ -146,7 +146,7 @@ module ID (
 	assign imms = {{20{inst[31]}}, inst[30:25], inst[11:7]};
 	assign immr = {{27{1'b0}}, inst[24:20]};
 	assign immi = {{21{inst[31]}}, inst[30:20]};
-	assign immir = ((func3 ^ 3'b001) & (func3 ^ 3'b101)) ? immi : immr;
+	assign immir = ((func3 ^ 3'b001) && (func3 ^ 3'b101)) ? immi : immr;
 
 	always @ ( * ) begin
 		case(inst[6:2])
@@ -159,7 +159,7 @@ module ID (
 		endcase
 	end
 
-	wire re = (inst[2] & ~(inst[6] & ~inst[3]));
+	wire re = (inst[2] & (~inst[6] | inst[3]));
 
 	always @ ( * ) begin
 		if (rst | ~rdy)begin
@@ -184,10 +184,10 @@ module ID (
 	end
 
 	wire 	reg1_use_ex, reg2_use_ex, reg1_use_ma, reg2_use_ma;
-	assign reg1_use_ex = fwd_ex_we & (fwd_ex_waddr == raddr1) & (fwd_ex_waddr != 5'b00000);
-	assign reg2_use_ex = fwd_ex_we & (fwd_ex_waddr == raddr2) & (fwd_ex_waddr != 5'b00000);
-	assign reg1_use_ma = fwd_ma_we & (fwd_ma_waddr == raddr1) & (fwd_ma_waddr != 5'b00000);
-	assign reg2_use_ma = fwd_ma_we & (fwd_ma_waddr == raddr2) & (fwd_ma_waddr != 5'b00000);
+	assign reg1_use_ex = fwd_ex_we && !(fwd_ex_waddr ^ raddr1) && (fwd_ex_waddr);
+	assign reg2_use_ex = fwd_ex_we && !(fwd_ex_waddr ^ raddr2) && (fwd_ex_waddr);
+	assign reg1_use_ma = fwd_ma_we && !(fwd_ma_waddr ^ raddr1) && (fwd_ma_waddr);
+	assign reg2_use_ma = fwd_ma_we && !(fwd_ma_waddr ^ raddr2) && (fwd_ma_waddr);
 
 
 
