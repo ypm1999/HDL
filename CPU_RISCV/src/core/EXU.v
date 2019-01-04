@@ -110,10 +110,10 @@ module EX (
 	assign SRL = (data1 >> data2[4:0]) | ({32{funct & data1[31]}} << (6'd32-data2[4:0]));
 
 	always @ ( * ) begin
-		if(rst == `RstEnable) begin
+		if (rst | ~rdy) begin
 			alu_out <= `ZeroWord;
 		end
-		else if(rdy) begin
+		else begin
 			case (alusel)
 				`AND_SEL: alu_out <= AND;
 				`OR_SEL: alu_out <= OR;
@@ -128,12 +128,12 @@ module EX (
 	end
 
 	always @ ( * ) begin
-		if(rst == `RstEnable)begin
+		if (rst | ~rdy) begin
 			we <= `False_v;
 			waddr <= 5'b00000;
 			wdata <= `ZeroWord;
 		end
-		else if(rdy)  begin
+		else begin
 			we <= we_in;
 			waddr <= waddr_in;
 			wdata <= alu_out;
@@ -141,12 +141,12 @@ module EX (
 	end
 
 	always @ ( * ) begin
-		if(rst == `RstEnable)begin
+		if (rst | ~rdy) begin
 			ma_we <= `False_v;
 			ma_re <= `False_v;
 			ma_width <= 3'b000;
 		end
-		else if(rdy)  begin
+		else begin
 			ma_we <= ma_we_in;
 			ma_re <= ma_re_in;
 			ma_width <= ma_width_in;
@@ -154,11 +154,11 @@ module EX (
 	end
 
 	always @ ( * ) begin
-		if(rst == `RstEnable)begin
+		if (rst | ~rdy) begin
 			ma_addr <= `ZeroWord;
 			ma_wdata <= `ZeroWord;
 		end
-		else if(rdy)  begin
+		else begin
 			ma_addr <= alu_out;
 			ma_wdata <= extra_data_in;
 		end

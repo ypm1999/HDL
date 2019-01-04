@@ -69,10 +69,10 @@ int load_ram(char* rom_path) {
     info("RAM size: %x\n", ram_size);
     fin.seekg(0, std::ios_base::beg);
     fin.read(reinterpret_cast<char*>(ram_data), ram_size);
-    for (int i=0;i<0x40; ++i) {
-        info("%02x ", (byte)ram_data[i+0x1000]);
-        if (!((i+1)%16)) info("\n");
-    }
+    // for (int i=0;i<0x40; ++i) {
+    //     info("%02x ", (byte)ram_data[i+0x1000]);
+    //     if (!((i+1)%16)) info("\n");
+    // }
     fin.close();
     return ram_size;
 }
@@ -86,10 +86,10 @@ int load_input(char* in_path) {
     info("INPUT size: %x\n", in_size);
     fin.seekg(0, std::ios_base::beg);
     fin.read(reinterpret_cast<char*>(in_data), in_size);
-    for (int i=0;i<0x10; ++i) {
-        info("%02x ", (byte)in_data[i]);
-        if (!((i+1)%16)) info("\n");
-    }
+    // for (int i=0;i<0x10; ++i) {
+    //     info("%02x ", (byte)in_data[i]);
+    //     if (!((i+1)%16)) info("\n");
+    // }
     fin.close();
     return in_size;
 }

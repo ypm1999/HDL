@@ -6,6 +6,7 @@
 ## Clock signal
 set_property PACKAGE_PIN W5 [get_ports EXCLK]
 set_property IOSTANDARD LVCMOS33 [get_ports EXCLK]
+create_clock -period 10 -name sys_clk_pin -waveform {0 5} -add [get_ports EXCLK]
 
 ## Switches
 #set_property PACKAGE_PIN V17 [get_ports {sw[0]}]
@@ -296,5 +297,3 @@ set_property IOSTANDARD LVCMOS33 [get_ports Tx]
 ## Configuration options, can be used for all designs
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 set_property CFGBVS VCCO [current_design]
-
-create_clock -period 10 -name sys_clk_pin -waveform {0 5} -add [get_ports EXCLK]

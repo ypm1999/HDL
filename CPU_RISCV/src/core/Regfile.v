@@ -22,24 +22,28 @@ module RegFile(
 
 
 	always @ ( posedge clk ) begin
-		if (~rst & rdy & we & (waddr != 5'b00000))begin
+		if ((~rst & rdy) & we & (waddr != 5'b00000))begin
 			registers[waddr] <= wdata;
 		end
 	end
 
+	wire [31:0] reg1 = registers[raddr1],
+				reg2 = registers[raddr2];
+
+
 	always @ ( * ) begin
-		if (rst | ~rdy | !re1 | raddr1 == 5'b00000)
+		if ((rst | ~rdy) | (!re1 | !raddr1))
 			rdata1 <= `ZeroWord;
 		else begin
-			rdata1 <= (we && waddr == raddr1) ? wdata : registers[raddr1];
+			rdata1 <= (we && !(waddr ^ raddr1)) ? wdata : reg1;
 		end
 	end
 
 	always @ ( * ) begin
-		if (rst | ~rdy | !re2 | raddr2 == 5'b00000)
+		if ((rst | ~rdy) | (!re2 | !raddr2))
 			rdata2 <= `ZeroWord;
 		else begin
-			rdata2 <= (we && waddr == raddr2) ? wdata : registers[raddr2];
+			rdata2 <= (we && !(waddr ^ raddr2)) ? wdata : reg2;
 		end
 	end
 

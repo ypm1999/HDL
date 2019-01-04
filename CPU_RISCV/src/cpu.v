@@ -30,9 +30,10 @@ assign dbgreg_dout = 32'h00001000;
 // - 0x30004 write: indicates program stop (will output '\0' through uart tx)
 
 //IF->IFID->ID
-wire[16:0]	        if_pc;
+wire[16:0]	if_pc;
 wire[`InstBus]		if_inst;
-wire[16:0]          id_pc;
+wire                if_bj_stall;
+wire[16:0]	id_pc;
 wire[`InstBus]		id_inst;
 
 //ID->IF(new pc for J and B)
@@ -65,6 +66,7 @@ wire[ 2:0]			id_ma_width;
 
 
 //EX->EXMEM
+wire[`AluOpBus] 	ex_aluop;
 wire[`AluSelBus] 	ex_alusel;
 wire				ex_funct;
 wire				ex_we_in;

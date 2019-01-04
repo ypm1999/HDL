@@ -8,7 +8,7 @@
 
 #define CPUCLK_PORT_IN 0x30004      // port that reads clocks passed since cpu starts
 
-#define CPU_CLK_FREQ 80000000       // clock frequency of the cpu on FPGA
+#define CPU_CLK_FREQ 70000000       // clock frequency of the cpu on FPGA
 
 static inline unsigned char inb()
 {

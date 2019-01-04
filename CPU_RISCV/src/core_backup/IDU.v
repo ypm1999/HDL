@@ -244,7 +244,7 @@ module ID (
 	assign npc2 = imm[16:0] + pc;
 
 	always @ ( * ) begin
-		if (rst == `RstEnable)
+		if (rst)
 			npc_addr <= `ZeroWord;
 		else
 			npc_addr = (inst[3:2] == 2'b01) ? {npc1[16:1], 1'b0} : npc2;

@@ -9,7 +9,6 @@ module IF_ID (
 	input wire[`InstBus] 		if_inst,
 	input wire[4:0] 			stall,
 
-
 	output reg[16:0]			id_pc,
 	output reg[`InstBus]		id_inst
 	);
@@ -82,11 +81,11 @@ module ID (
 	wire 						sign_lt, lt, eq;
 
 	always @ ( * ) begin
-		if (rst == `RstEnable)begin
+		if (rst | ~rdy) begin
 			waddr <= 5'b00000;
 			funct <= 1'b0;
 		end
-		else if(rdy) begin
+		else begin
 			waddr <= inst[11:7];
 			if ((inst[6:1] == 6'b001001) && (inst[14:12] == 3'b101) ||
 				(inst[6:1] == 6'b011001))begin
@@ -99,14 +98,14 @@ module ID (
 	end
 
 	always @ ( * ) begin
-		if (rst == `RstEnable)begin
+		if (rst | ~rdy) begin
 			we <= `False_v;
 			ma_we <= `False_v;
 			ma_re <= `False_v;
 			ma_width <= 3'b000;
 			alusel <= 3'b000;
 		end
-		else if(rdy) begin
+		else begin
 			we <= `True_v;
 			ma_we <= `False_v;
 			ma_re <= `False_v;
@@ -139,7 +138,7 @@ module ID (
 		end
 	end
 
-	wire [31:0] immu, immj, immi, immb, imms, immr;
+	wire [31:0] immu, immj, immi, immb, imms, immr, immir;
 
 	assign immu = {inst[31:12], {12{1'b0}}};
 	assign immj = {{12{inst[31]}}, inst[19:12], inst[20], inst[30:21], 1'b0};
@@ -147,27 +146,20 @@ module ID (
 	assign imms = {{20{inst[31]}}, inst[30:25], inst[11:7]};
 	assign immr = {{27{1'b0}}, inst[24:20]};
 	assign immi = {{21{inst[31]}}, inst[30:20]};
+	assign immir = ((func3 ^ 3'b001) & (func3 ^ 3'b101)) ? immi : immr;
 
 	always @ ( * ) begin
-		if (rst | ~rdy)begin
-			imm <= `ZeroWord;
-		end
-		else begin
-			case(inst[6:1])
-				6'b011011, 6'b001011 : imm <= immu;
-				6'b110111 : imm <= immj;
-				6'b110001 : imm <= immb;
-				6'b010001 : imm <= imms;
-				6'b001001 :begin// I/R;
-					if (func3 == 3'b001 || func3 == 3'b101)
-						imm <= immr;
-					else
-						imm <= immi;
-				end
-				default: imm <= immi;//6'b110011 : //6'b000001 :
-			endcase
-		end
+		case(inst[6:2])
+			5'b01101, 5'b00101 : imm <= immu;
+			5'b11011 : imm <= immj;
+			5'b11000 : imm <= immb;
+			5'b01000 : imm <= imms;
+			5'b00100 : imm <= immir;
+			default: imm <= immi;//6'b110011 : //6'b000001 :
+		endcase
 	end
+
+	wire re = (inst[2] & ~(inst[6] & ~inst[3]));
 
 	always @ ( * ) begin
 		if (rst | ~rdy)begin
@@ -176,7 +168,7 @@ module ID (
 		end
 		else begin
 			re1 <= `True_v;
-			raddr1 <= (inst[2] & ~(inst[6] & ~inst[3])) ? 5'b00000 : inst[19:15];
+			raddr1 <= re ? 5'b00000 : inst[19:15];
 		end
 	end
 
@@ -186,14 +178,8 @@ module ID (
 			raddr2 <= 5'b00000;
 		end
 		else begin
-			if (inst[2] & ~(inst[6] & ~inst[3])) begin
-				re2 <= `False_v;
-				raddr2 <= 5'b00000;
-			end
-			else begin
-				raddr2 <= inst[24:20];
-				re2 <= inst[1] & inst[5];
-			end
+			raddr2 <= inst[24:20];
+			re2 <= ~re & inst[1] & inst[5];
 		end
 	end
 
@@ -204,44 +190,45 @@ module ID (
 	assign reg2_use_ma = fwd_ma_we & (fwd_ma_waddr == raddr2) & (fwd_ma_waddr != 5'b00000);
 
 
-	always @ ( * ) begin
-		if (rst | ~rdy)
-			reg1 <= `ZeroWord;
-		else begin
-			if (re1) begin
-				if (reg1_use_ex)
-					reg1 <= fwd_ex_wdata;
-				else if(reg1_use_ma)
-					reg1 <= fwd_ma_wdata;
-				else
-					reg1 <= rdata1;
+
+		always @ ( * ) begin
+			if (rst | ~rdy)
+				reg1 <= `ZeroWord;
+			else begin
+				if (re1) begin
+					if (reg1_use_ex)
+						reg1 <= fwd_ex_wdata;
+					else
+					if(reg1_use_ma)
+						reg1 <= fwd_ma_wdata;
+					else
+						reg1 <= rdata1;
+				end
 			end
 		end
-	end
 
-	always @ ( * ) begin
-		if (rst | ~rdy)
-			reg2 <= `ZeroWord;
-		else  begin
-			if (re2)begin
-				if (reg2_use_ex)
-					reg2 <= fwd_ex_wdata;
-				else if(reg2_use_ma)
-					reg2 <= fwd_ma_wdata;
-				else
-					reg2 <= rdata2;
+		always @ ( * ) begin
+			if (rst | ~rdy)
+				reg2 <= `ZeroWord;
+			else  begin
+				if (re2)begin
+					if (reg2_use_ex)
+						reg2 <= fwd_ex_wdata;
+					else
+					if(reg2_use_ma)
+						reg2 <= fwd_ma_wdata;
+					else
+						reg2 <= rdata2;
+				end
 			end
 		end
-	end
 
-	assign sign_lt = $signed(reg1) < $signed(reg2);
-	assign eq = reg1 == reg2;
-	assign lt = reg1 < reg2;
+	assign sign_lt = (~inst[13] & inst[14]) & (($signed(reg1) < $signed(reg2)) ^ inst[12]);
+	assign eq = ~inst[14] & (!(reg1 ^ reg2) ^ inst[12]);
+	assign lt = (inst[13] & inst[14]) & ((reg1 < reg2) ^ inst[12]);
 
 	always @ ( * ) begin
-		use_npc <= ~(rst | ~rdy) & inst[6] & (inst[2] | (~inst[14] & (eq ^ inst[12]))
-					| (~inst[13] & inst[14] & (sign_lt ^ inst[12]))
-					| (inst[13] & inst[14] & (lt ^ inst[12])));
+		use_npc <= inst[6] & ((inst[2] | eq) | (sign_lt | lt));
 	end
 
 	wire[16:0] 		npc1, npc2;
@@ -249,17 +236,14 @@ module ID (
 	assign npc2 = imm[16:0] + pc;
 
 	always @ ( * ) begin
-		if (rst == `RstEnable)
-			npc_addr <= `ZeroWord;
-		else
-			npc_addr = (inst[3:2] == 2'b01) ? {npc1[16:1], 1'b0} : npc2;
+		npc_addr <= (inst[3:2] ^ 2'b01) ? npc2 : {npc1[16:1], 1'b0};
 	end
 
 	always @ ( * ) begin
-		if (rst == `RstEnable) begin
+		if (rst | ~rdy) begin
 			data1 <= `ZeroWord;
 		end
-		else if (rdy) begin
+		else begin
 			if (inst[6:2] == 5'b00101)
 				data1 <= imm;
 			else if (inst[6:2] == 5'b11001)
@@ -267,33 +251,28 @@ module ID (
 			else
 				data1 <= reg1;
 		end
-		else
-			data1 <= data1;
 	end
 
 	always @ ( * ) begin
-		if (rst == `RstEnable) begin
+		if (rst | ~rdy)
 			data2 <= `ZeroWord;
-			extra_data = `ZeroWord;
-		end
-		else if (rdy) begin
-			if(ma_we)begin
-				data2 <= imm;
-				extra_data <= reg2;
-			end
-			else begin
-				if (inst[6:2] == 5'b00101)
-					data2 <= pc;
-				else if (inst[6] & inst[2])
-					data2 <= pc + 4;
-				else
-					data2 <= (re2) ? reg2 : imm;
-				extra_data <= imm;
-			end
-		end
 		else begin
-			data2 <= data2;
-			extra_data = extra_data;
+			if(ma_we)
+				data2 <= imm;
+			else if (inst[6:2] == 5'b00101)
+				data2 <= pc;
+			else if (inst[6] & inst[2])
+				data2 <= pc + 4;
+			else
+				data2 <= (re2) ? reg2 : imm;
+		end
+	end
+
+	always @ ( * ) begin
+		if (rst | ~rdy)
+			extra_data <= `ZeroWord;
+		else begin
+			extra_data <= ma_we ? reg2 : imm;
 		end
 	end
 

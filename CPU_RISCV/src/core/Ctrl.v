@@ -12,16 +12,16 @@ module Ctrl (
 	);
 
 	always @ (*) begin
-		if (rst)
+		if (rst | ~rdy)
 			stall_cmd <= 5'b00000;
-		else if (rdy) begin
-				if (ma_stall_req)
-					stall_cmd <= 5'b01111;
-				else if (if_stall_req)
-					stall_cmd <= 5'b00001;
-				else
-					stall_cmd <= 5'b00000;
-			end
+		else begin
+			if (ma_stall_req)
+				stall_cmd <= 5'b01111;
+			else if (if_stall_req)
+				stall_cmd <= 5'b00001;
+			else
+				stall_cmd <= 5'b00000;
+		end
 	end
 
 endmodule // Ctrl
