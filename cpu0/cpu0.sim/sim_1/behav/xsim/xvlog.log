@@ -1,0 +1,45 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/cpu0/cpu0.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0_clk_wiz.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_wiz_0_clk_wiz
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/cpu0/cpu0.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module clk_wiz_0
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/core/Ctrl.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module Ctrl
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/core/EXU.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ID_EX
+INFO: [VRFC 10-311] analyzing module EX
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/core/IDU.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module IF_ID
+INFO: [VRFC 10-311] analyzing module ID
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/core/IFU.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module IF
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/core/MAU.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module MA
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/core/Memory_Ctrl.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module Memory_Ctrl
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/core/Regfile.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module RegFile
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/core/WBU.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module WB
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/common/block_ram/block_ram.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module dual_port_ram_sync
+INFO: [VRFC 10-311] analyzing module single_port_ram_sync
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/cpu.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module cpu
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/common/fifo/fifo.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fifo
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/hci.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module hci
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/ram.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ram
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/riscv_top.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module riscv_top
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/common/uart/uart.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/common/uart/uart_baud_clk.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_baud_clk
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/common/uart/uart_rx.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_rx
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/src/common/uart/uart_tx.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_tx
+INFO: [VRFC 10-2263] Analyzing Verilog file "E:/code/HDL/CPU_RISCV/sim/testbench.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module testbench

@@ -1,0 +1,29 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  --include "../../../../cpu0.srcs/sources_1/ip/clk_wiz_0" \
+"../../../../cpu0.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0_clk_wiz.v" \
+"../../../../cpu0.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0.v" \
+"../../../../../HDL/CPU_RISCV/src/core/Ctrl.v" \
+"../../../../../HDL/CPU_RISCV/src/core/EXU.v" \
+"../../../../../HDL/CPU_RISCV/src/core/IDU.v" \
+"../../../../../HDL/CPU_RISCV/src/core/IFU.v" \
+"../../../../../HDL/CPU_RISCV/src/core/MAU.v" \
+"../../../../../HDL/CPU_RISCV/src/core/Memory_Ctrl.v" \
+"../../../../../HDL/CPU_RISCV/src/core/Regfile.v" \
+"../../../../../HDL/CPU_RISCV/src/core/WBU.v" \
+"../../../../../HDL/CPU_RISCV/src/common/block_ram/block_ram.v" \
+"../../../../../HDL/CPU_RISCV/src/cpu.v" \
+"../../../../../HDL/CPU_RISCV/src/common/fifo/fifo.v" \
+"../../../../../HDL/CPU_RISCV/src/hci.v" \
+"../../../../../HDL/CPU_RISCV/src/ram.v" \
+"../../../../../HDL/CPU_RISCV/src/riscv_top.v" \
+"../../../../../HDL/CPU_RISCV/src/common/uart/uart.v" \
+"../../../../../HDL/CPU_RISCV/src/common/uart/uart_baud_clk.v" \
+"../../../../../HDL/CPU_RISCV/src/common/uart/uart_rx.v" \
+"../../../../../HDL/CPU_RISCV/src/common/uart/uart_tx.v" \
+"../../../../../HDL/CPU_RISCV/sim/testbench.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

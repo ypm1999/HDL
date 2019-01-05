@@ -1,0 +1,39 @@
+Vivado Simulator 2018.2
+Copyright 1986-1999, 2001-2018 Xilinx, Inc. All Rights Reserved.
+Running: E:/Xilinx/Vivado/2018.2/bin/unwrapped/win64.o/xelab.exe -wto 90cfed080ca94f3f9abc330fcb5f8c24 --incr --debug typical --relax --mt 2 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot testbench_behav xil_defaultlib.testbench xil_defaultlib.glbl -log elaborate.log 
+Using 2 slave threads.
+Starting static elaboration
+WARNING: [VRFC 10-278] actual bit length 32 differs from formal bit length 1 for port reset [E:/code/HDL/CPU_RISCV/src/riscv_top.v:30]
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module unisims_ver.IBUF
+Compiling module unisims_ver.PLLE2_ADV(CLKFBOUT_MULT=9,CLKIN1...
+Compiling module unisims_ver.BUFG
+Compiling module xil_defaultlib.clk_wiz_0_clk_wiz
+Compiling module xil_defaultlib.clk_wiz_0
+Compiling module xil_defaultlib.single_port_ram_sync(ADDR_WIDTH=...
+Compiling module xil_defaultlib.ram
+Compiling module xil_defaultlib.Ctrl
+Compiling module xil_defaultlib.Memory_Ctrl
+Compiling module xil_defaultlib.IF
+Compiling module xil_defaultlib.IF_ID
+Compiling module xil_defaultlib.ID
+Compiling module xil_defaultlib.RegFile
+Compiling module xil_defaultlib.ID_EX
+Compiling module xil_defaultlib.EX
+Compiling module xil_defaultlib.MA
+Compiling module xil_defaultlib.WB
+Compiling module xil_defaultlib.cpu
+Compiling module xil_defaultlib.fifo(ADDR_BITS=10)
+Compiling module xil_defaultlib.uart_baud_clk(SYS_CLK_FREQ=90000...
+Compiling module xil_defaultlib.uart_rx_default
+Compiling module xil_defaultlib.uart_tx_default
+Compiling module xil_defaultlib.fifo
+Compiling module xil_defaultlib.uart(SYS_CLK_FREQ=90000000,BAUD_...
+Compiling module xil_defaultlib.hci(SYS_CLK_FREQ=90000000)
+Compiling module xil_defaultlib.riscv_top(SIM=1)
+Compiling module xil_defaultlib.testbench
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot testbench_behav

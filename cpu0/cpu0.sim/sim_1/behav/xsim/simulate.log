@@ -1,0 +1,11 @@
+Vivado Simulator 2018.2
+Time resolution is 1 ps
+Warning : input CLKIN1 period and attribute CLKIN1_PERIOD on PLLE2_ADV instance testbench.top.PLL.inst.plle2_adv_inst are not same.
+11
+
+11002299
+
+117711
+
+IO:Return
+$finish called at time : 5833222 ps : File "E:/code/HDL/CPU_RISCV/src/hci.v" Line 248

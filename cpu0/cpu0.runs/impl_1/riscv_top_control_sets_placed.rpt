@@ -1,0 +1,219 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+--------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
+| Date         : Sat Jan  5 11:46:42 2019
+| Host         : DESKTOP-P7HKMJK running 64-bit major release  (build 9200)
+| Command      : report_control_sets -verbose -file riscv_top_control_sets_placed.rpt
+| Design       : riscv_top
+| Device       : xc7a35t
+--------------------------------------------------------------------------------------
+
+Control Set Information
+
+Table of Contents
+-----------------
+1. Summary
+2. Histogram
+3. Flip-Flop Distribution
+4. Detailed Control Set Information
+
+1. Summary
+----------
+
++----------------------------------------------------------+-------+
+|                          Status                          | Count |
++----------------------------------------------------------+-------+
+| Number of unique control sets                            |   151 |
+| Unused register locations in slices containing registers |   196 |
++----------------------------------------------------------+-------+
+
+
+2. Histogram
+------------
+
++--------+--------------+
+| Fanout | Control Sets |
++--------+--------------+
+|      4 |            1 |
+|      8 |            3 |
+|     10 |            2 |
+|     14 |            4 |
+|    16+ |          141 |
++--------+--------------+
+
+
+3. Flip-Flop Distribution
+-------------------------
+
++--------------+-----------------------+------------------------+-----------------+--------------+
+| Clock Enable | Synchronous Set/Reset | Asynchronous Set/Reset | Total Registers | Total Slices |
++--------------+-----------------------+------------------------+-----------------+--------------+
+| No           | No                    | No                     |             136 |           18 |
+| No           | No                    | Yes                    |              62 |           12 |
+| No           | Yes                   | No                     |             320 |           51 |
+| Yes          | No                    | No                     |           16768 |         2487 |
+| Yes          | No                    | Yes                    |              68 |           12 |
+| Yes          | Yes                   | No                     |            1186 |          187 |
++--------------+-----------------------+------------------------+-----------------+--------------+
+
+
+4. Detailed Control Set Information
+-----------------------------------
+
++--------------------+---------------------------------------------------------------------+------------------------------------------+------------------+----------------+
+|    Clock Signal    |                            Enable Signal                            |             Set/Reset Signal             | Slice Load Count | Bel Load Count |
++--------------------+---------------------------------------------------------------------+------------------------------------------+------------------+----------------+
+|  PLL/inst/clk_out1 |                                                                     | btnC_IBUF                                |                1 |              4 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_rx_blk/d_oversample_tick_cnt                     | rst                                      |                1 |              8 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_rx_fifo/E[0]                                     | rst                                      |                1 |              8 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_blk/d_baud_clk_tick_cnt                       | rst                                      |                1 |              8 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_blk/q_state[4]_i_1__0_n_0                     | rst                                      |                2 |             10 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_rx_blk/q_state[4]_i_1_n_0                        | rst                                      |                2 |             10 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[103]_i_1_n_0                               | rst                                      |                4 |             14 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[7]_i_1_n_0                                 | rst                                      |                3 |             14 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[39]_i_1_n_0                                | rst                                      |                3 |             14 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[71]_i_1_n_0                                | rst                                      |                3 |             14 |
+|  PLL/inst/clk_out1 |                                                                     | cpu0/ram_ctrl0/q_io_in_wr_data_reg[7][0] |                2 |             16 |
+|  PLL/inst/clk_out1 |                                                                     | cpu0/ram_ctrl0/q_tx_data_reg[7]_0[0]     |                4 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[23]_i_1_n_0                                | rst                                      |                4 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[55]_i_1_n_0                                | rst                                      |                4 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[63]_i_1_n_0                                | rst                                      |                4 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[127]_i_1_n_0                               | rst                                      |                3 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/ram_dout[7]_i_1_n_0                                  | rst                                      |                3 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[119]_i_1_n_0                               | rst                                      |                4 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[111]_i_1_n_0                               | rst                                      |                4 |             16 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_blk/d_data                                    | rst                                      |                3 |             16 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_rx_blk/d_data                                    | rst                                      |                3 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[15]_i_1_n_0                                | rst                                      |                3 |             16 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_rx_fifo/q_execute_cnt_reg[0][0]                  | rst                                      |                3 |             16 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_rx_fifo/q_addr_reg[2]                            | rst                                      |                3 |             16 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_rx_fifo/q_addr_reg[15]_0                         | rst                                      |                2 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/mem_rdata[7]_i_1_n_0                                 | rst                                      |                3 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[95]_i_1_n_0                                | rst                                      |                4 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/mem_rdata[15]_i_1_n_0                                | rst                                      |                2 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/mem_rdata[31]_i_1_n_0                                | rst                                      |                3 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/mem_rdata[23]_i_1_n_0                                | rst                                      |                2 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[87]_i_1_n_0                                | rst                                      |                4 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[79]_i_1_n_0                                | rst                                      |                3 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[47]_i_1_n_0                                | rst                                      |                4 |             16 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/inst_data[31]_i_1_n_0                                | rst                                      |                3 |             16 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_execute_cnt_reg[8][0]                  | rst                                      |                3 |             18 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_blk/rd_en_prot                                | rst                                      |                4 |             20 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/wr_en_prot                                          | rst                                      |                4 |             20 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/rd_en_prot                                           | rst                                      |                3 |             20 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/wr_en_prot                               | rst                                      |                4 |             20 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_128_191_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_192_255_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_896_959_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_960_1023_0_2_i_1__0_n_0 |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_576_639_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_704_767_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_960_1023_0_2_i_1_n_0               |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_832_895_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_768_831_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_64_127_0_2_i_1_n_0                 |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_896_959_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_512_575_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_384_447_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_640_703_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_448_511_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_320_383_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_256_319_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_128_191_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_832_895_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_192_255_0_2_i_1_n_0                |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/io_in_fifo/q_data_array_reg_0_63_0_2_i_1_n_0                   |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_768_831_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_512_575_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_576_639_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_704_767_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_640_703_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_448_511_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_384_447_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_64_127_0_2_i_1__0_n_0   |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_320_383_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_0_63_0_2_i_1__0_n_0     |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_tx_fifo/q_data_array_reg_256_319_0_2_i_1__0_n_0  |                                          |                3 |             24 |
+|  PLL/inst/clk_out1 | hci0/uart_blk/uart_rx_fifo/q_data_array_reg_0_7_0_5_i_1_n_0         |                                          |                2 |             32 |
+|  PLL/inst/clk_out1 | cpu0/ram_ctrl0/ram_a[17]_i_1_n_0                                    | rst                                      |                6 |             36 |
+|  PLL/inst/clk_out1 | cpu0/if0/pc[10]_i_1_n_0                                             | rst                                      |                4 |             36 |
+|  PLL/inst/clk_out1 | cpu0/if0/inst[31]_i_1_n_0                                           | rst                                      |               13 |             62 |
+|  PLL/inst/clk_out1 | cpu0/ma0/wdata_out[31]_i_1_n_0                                      | rst                                      |                9 |             64 |
+|  reg_re2           |                                                                     | hci0/raddr11                             |                9 |             64 |
+|  PLL/inst/clk_out1 | hci0/ex_extra_data_reg[0]                                           | hci0/ex_extra_data_reg[0]_0              |                6 |             64 |
+|  reg_re1           |                                                                     | hci0/raddr11                             |               10 |             64 |
+|  PLL/inst/clk_out1 | hci0/q_cpu_cycle_cnt_reg[31]_0                                      | rst                                      |                9 |             70 |
+|  PLL/inst/clk_out1 |                                                                     | hci0/waddr_out_reg[0][0]                 |               12 |             76 |
+|  PLL/inst/clk_out1 | hci0/id_inst_reg[1]                                                 | cpu0/if0/id_pc_reg[0][0]                 |               11 |             96 |
+|  PLL/inst/clk_out1 | cpu0/ma0/waddr_out[4]_i_1_n_0                                       | rst                                      |               13 |            118 |
+|  PLL/inst/clk_out1 |                                                                     |                                          |               18 |            136 |
+|  PLL/inst/clk_out1 |                                                                     | rst                                      |               25 |            142 |
+|  PLL/inst/clk_out1 | hci0/id_inst_reg[1]                                                 | hci0/ex_ma_re_reg                        |               19 |            158 |
+|  PLL/inst/clk_out1 | cpu0/wb0/p_0_in4_out                                                |                                          |               12 |            192 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[3][134]_i_1_n_0                                     |                                          |               36 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[32][134]_i_1_n_0                                    |                                          |               38 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[38][134]_i_1_n_0                                    |                                          |               40 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[22][134]_i_1_n_0                                    |                                          |               40 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[2][134]_i_1_n_0                                     |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[29][134]_i_1_n_0                                    |                                          |               35 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[28][134]_i_1_n_0                                    |                                          |               44 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[27][134]_i_1_n_0                                    |                                          |               37 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[1][134]_i_1_n_0                                     |                                          |               37 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[13][134]_i_1_n_0                                    |                                          |               38 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[11][134]_i_1_n_0                                    |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[16][134]_i_1_n_0                                    |                                          |               33 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[15][134]_i_1_n_0                                    |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[25][134]_i_1_n_0                                    |                                          |               38 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[0][134]_i_1_n_0                                     |                                          |               42 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[17][134]_i_1_n_0                                    |                                          |               36 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[20][134]_i_1_n_0                                    |                                          |               41 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[18][134]_i_1_n_0                                    |                                          |               46 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[10][134]_i_1_n_0                                    |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[24][134]_i_1_n_0                                    |                                          |               43 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[19][134]_i_1_n_0                                    |                                          |               40 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[26][134]_i_1_n_0                                    |                                          |               38 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[23][134]_i_1_n_0                                    |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[12][134]_i_1_n_0                                    |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[34][134]_i_1_n_0                                    |                                          |               37 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[30][134]_i_1_n_0                                    |                                          |               36 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[21][134]_i_1_n_0                                    |                                          |               41 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[59][134]_i_1_n_0                                    |                                          |               40 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[8][134]_i_1_n_0                                     |                                          |               41 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[7][134]_i_1_n_0                                     |                                          |               34 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[63][134]_i_1_n_0                                    |                                          |               41 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[9][134]_i_1_n_0                                     |                                          |               38 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[6][134]_i_1_n_0                                     |                                          |               37 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[55][134]_i_1_n_0                                    |                                          |               38 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[50][134]_i_1_n_0                                    |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[43][134]_i_1_n_0                                    |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[40][134]_i_1_n_0                                    |                                          |               35 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[62][134]_i_1_n_0                                    |                                          |               36 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[49][134]_i_1_n_0                                    |                                          |               42 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[5][134]_i_1_n_0                                     |                                          |               40 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[45][134]_i_1_n_0                                    |                                          |               43 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[46][134]_i_1_n_0                                    |                                          |               37 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[60][134]_i_1_n_0                                    |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[54][134]_i_1_n_0                                    |                                          |               37 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[52][134]_i_1_n_0                                    |                                          |               42 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[35][134]_i_1_n_0                                    |                                          |               42 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[42][134]_i_1_n_0                                    |                                          |               34 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[44][134]_i_1_n_0                                    |                                          |               37 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[56][134]_i_1_n_0                                    |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[4][134]_i_1_n_0                                     |                                          |               43 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[58][134]_i_1_n_0                                    |                                          |               40 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[53][134]_i_1_n_0                                    |                                          |               41 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[48][134]_i_1_n_0                                    |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[41][134]_i_1_n_0                                    |                                          |               40 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[14][134]_i_1_n_0                                    |                                          |               42 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[47][134]_i_1_n_0                                    |                                          |               37 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[33][134]_i_1_n_0                                    |                                          |               36 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[37][134]_i_1_n_0                                    |                                          |               40 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[36][134]_i_1_n_0                                    |                                          |               38 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[31][134]_i_1_n_0                                    |                                          |               37 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[61][134]_i_1_n_0                                    |                                          |               39 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[57][134]_i_1_n_0                                    |                                          |               40 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[39][134]_i_1_n_0                                    |                                          |               37 |            262 |
+|  PLL/inst/clk_out1 | cpu0/if0/icache[51][134]_i_1_n_0                                    |                                          |               38 |            262 |
++--------------------+---------------------------------------------------------------------+------------------------------------------+------------------+----------------+
+
+

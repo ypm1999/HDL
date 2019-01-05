@@ -1,16 +1,31 @@
 #include "io.h"
-int tak(int x, int y, int z) {
-	if ( y < x ) return 1 + tak( tak(x-1, y, z), tak(y-1, z, x), tak(z-1, x, y) );
-	else return z;
-}
+int f[2801];
+int main() {
+	int a = 10000;
+	int b = 0;
+	int c = 2800;
+	int d = 0;
+	int e = 0;
+	int g = 0;
 
-int main(){
-	int a;
-	int b;
-	int c;
-	a=inl();
-	b=inl();
-	c=inl();
-	outlln(tak(a,b,c));
-	return 0;
+	for (;b-c!=0;) 
+		f[b++] = a/5;
+	for (;; e = d%a){
+		d = 0;
+		g = c*2;
+		if (g==0) break;
+		
+		for (b=c;;d=d*b){
+			d=d+f[b]*a;
+			f[b] = d%--g;
+			d=d/g--;
+			if (--b==0) break;
+		}
+		
+		c = c-14;
+		outl(e+d/a);
+	}
+	
+  print("\n");
+  return 0;
 }
