@@ -149,14 +149,19 @@ module ID (
 	assign immir = ((func3 ^ 3'b001) && (func3 ^ 3'b101)) ? immi : immr;
 
 	always @ ( * ) begin
-		case(inst[6:2])
-			5'b01101, 5'b00101 : imm <= immu;
-			5'b11011 : imm <= immj;
-			5'b11000 : imm <= immb;
-			5'b01000 : imm <= imms;
-			5'b00100 : imm <= immir;
-			default: imm <= immi;//6'b110011 : //6'b000001 :
-		endcase
+		if (rst | ~rdy)begin
+			imm <= `ZeroWord;
+		end
+		else begin
+			case(inst[6:2])
+				5'b01101, 5'b00101 : imm <= immu;
+				5'b11011 : imm <= immj;
+				5'b11000 : imm <= immb;
+				5'b01000 : imm <= imms;
+				5'b00100 : imm <= immir;
+				default: imm <= immi;//6'b110011 : //6'b000001 :
+			endcase
+		end
 	end
 
 	wire re = (inst[2] & (~inst[6] | inst[3]));
@@ -165,21 +170,15 @@ module ID (
 		if (rst | ~rdy)begin
 			re1 <= `False_v;
 			raddr1 <= 5'b00000;
-		end
-		else begin
-			re1 <= `True_v;
-			raddr1 <= re ? 5'b00000 : inst[19:15];
-		end
-	end
-
-	always @ ( * ) begin
-		if (rst | ~rdy)begin
 			re2 <= `False_v;
 			raddr2 <= 5'b00000;
 		end
 		else begin
-			raddr2 <= inst[24:20];
+			re1 <= `True_v;
 			re2 <= ~re & inst[1] & inst[5];
+			raddr1 <= re ? 5'b00000 : inst[19:15];
+			raddr2 <= inst[24:20];
+
 		end
 	end
 
@@ -191,37 +190,35 @@ module ID (
 
 
 
-		always @ ( * ) begin
-			if (rst | ~rdy)
-				reg1 <= `ZeroWord;
-			else begin
-				if (re1) begin
-					if (reg1_use_ex)
-						reg1 <= fwd_ex_wdata;
-					else
-					if(reg1_use_ma)
-						reg1 <= fwd_ma_wdata;
-					else
-						reg1 <= rdata1;
-				end
+	always @ ( * ) begin
+		if (rst | ~rdy)
+			reg1 <= `ZeroWord;
+		else begin
+			if (re1) begin
+				if (reg1_use_ex)
+					reg1 <= fwd_ex_wdata;
+				else if(reg1_use_ma)
+					reg1 <= fwd_ma_wdata;
+				else
+					reg1 <= rdata1;
 			end
 		end
+	end
 
-		always @ ( * ) begin
-			if (rst | ~rdy)
-				reg2 <= `ZeroWord;
-			else  begin
-				if (re2)begin
-					if (reg2_use_ex)
-						reg2 <= fwd_ex_wdata;
-					else
-					if(reg2_use_ma)
-						reg2 <= fwd_ma_wdata;
-					else
-						reg2 <= rdata2;
-				end
+	always @ ( * ) begin
+		if (rst | ~rdy)
+			reg2 <= `ZeroWord;
+		else  begin
+			if (re2)begin
+				if (reg2_use_ex)
+					reg2 <= fwd_ex_wdata;
+				else if(reg2_use_ma)
+					reg2 <= fwd_ma_wdata;
+				else
+					reg2 <= rdata2;
 			end
 		end
+	end
 
 	assign sign_lt = (~inst[13] & inst[14]) & (($signed(reg1) < $signed(reg2)) ^ inst[12]);
 	assign eq = ~inst[14] & (!(reg1 ^ reg2) ^ inst[12]);

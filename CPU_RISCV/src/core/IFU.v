@@ -29,9 +29,10 @@ module IF (
 	wire [7:0] 			tag = npc[16:9];
 	integer i;
 
-	wire [31:0]			inst_tmp = icache[line][{bb, 3'b000}+:32];
+	wire [31:0]			inst_tmp = bb[3] ? (bb[2] ? icache[line][127:96] : icache[line][95:64])
+											: (bb[2] ? icache[line][63:32] : icache[line][31:0]);
 	wire 				hit = icache[line][136] && !(icache[line][135:128] ^ tag);
-	wire 				b_or_l = inst_tmp[6] || !(inst_tmp[6:4] ^ 3'b000);
+	wire 				b_or_l = inst_tmp[6] || !inst_tmp[6:4];
 
 	always @ ( posedge clk ) begin
 		if (rst) begin
@@ -59,7 +60,7 @@ module IF (
 					if (~ram_inst_busy) begin
 						stall_req <= `False_v;
 						ram_inst_re <= `False_v;
-						if (ram_inst[{pc[3:0], 3'b110}] || ram_inst[{pc[3:0], 3'b100}+:3] == 3'b000)
+						if (ram_inst[{pc[3:0], 3'b110}] || !ram_inst[{pc[3:0], 3'b100}+:3])
 							sta <= 2'b11;
 						else
 							sta <= 2'b00;
@@ -86,6 +87,16 @@ module IF (
 
 	always @ ( posedge clk ) begin
 		if (rst) begin
+			for(i = 0; i < 32; i = i + 1)
+				icache[i][136] <= `False_v;
+		end
+		else if(rdy && sta == 2'b01) begin
+			icache[pc[8:4]] <= {1'b1, pc[16:9], ram_inst};
+		end
+	end
+
+	always @ ( posedge clk ) begin
+		if (rst) begin
 			pc <= -4;
 			ram_inst_addr <= 32'hffffffff;
 		end
@@ -99,22 +110,13 @@ module IF (
 
 	always @ ( posedge clk ) begin
 		if (rst) begin
-			for(i = 0; i < 32; i = i + 1)
-	 			icache[i][136] <= `False_v;
-		end
-		else if(rdy && sta == 2'b01) begin
-			icache[pc[8:4]] <= {1'b1, pc[16:9], ram_inst};
-		end
-	end
-
-	always @ ( posedge clk ) begin
-		if (rst) begin
 			inst <= `ZeroWord;
 		end
 		else if(rdy) begin
 			case (sta)
 				2'b00:inst <= stall ? inst : inst_tmp;
-				2'b01:inst <= ram_inst[{pc[3:0], 3'b000}+:32];
+				2'b01:inst <= pc[3] ? (pc[2] ? ram_inst[127:96] : ram_inst[95:64])
+									: (pc[2] ? ram_inst[63:32] : ram_inst[31:0]);
 				2'b10:inst <= `ZeroWord;
 				default:inst <= stall[0] ? inst : `ZeroWord;
 			endcase

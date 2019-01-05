@@ -41,8 +41,8 @@ module ID_EX (
 			ex_ma_re <= `False_v;
 			ex_ma_width <= 3'b000;
 		end
-		else if (rdy) begin
-			if (stall[1] && stall[2] == `False_v)begin
+		else if (rdy & ~stall[2]) begin
+			if (stall[1])begin
 				ex_alusel <= 3'b000;
 				ex_funct <= `False_v;
 				ex_data1 <= `ZeroWord;
@@ -53,7 +53,7 @@ module ID_EX (
 				ex_ma_re <= `False_v;
 				ex_ma_width <= 3'b000;
 			end
-			else if(!stall[2]) begin
+			else begin
 				ex_alusel <= id_alusel;
 				ex_funct <= id_funct;
 				ex_data1 <= id_data1;
