@@ -21,18 +21,29 @@ module IF (
 	);
 
 	reg [1:0] 			sta;
-	reg [136:0]			icache[31:0];
+	reg [135:0]			icache[63:0];
 
 	wire [16:0] 		npc = use_npc ? npc_addr : pc + 17'h4;
-	wire [5:0] 			line = npc[8:4];
+	wire [6:0] 			line = npc[9:4];
 	wire [3:0] 			bb = npc[3:0];
-	wire [7:0] 			tag = npc[16:9];
+	wire [6:0] 			tag = npc[16:10];
 	integer i;
 
 	wire [31:0]			inst_tmp = bb[3] ? (bb[2] ? icache[line][127:96] : icache[line][95:64])
 											: (bb[2] ? icache[line][63:32] : icache[line][31:0]);
-	wire 				hit = icache[line][136] && !(icache[line][135:128] ^ tag);
+	wire 				hit = icache[line][135] && !(icache[line][134:128] ^ tag);
 	wire 				b_or_l = inst_tmp[6] || !inst_tmp[6:4];
+
+	always @ ( posedge clk ) begin
+		if (rst) begin
+			for(i = 0; i < 64; i = i + 1)
+				icache[i][135] <= `False_v;
+		end
+		else if(rdy && sta == 2'b01) begin
+			icache[pc[9:4]] <= {1'b1, pc[16:10], ram_inst};
+		end
+	end
+
 
 	always @ ( posedge clk ) begin
 		if (rst) begin
@@ -85,15 +96,6 @@ module IF (
 		end
 	end
 
-	always @ ( posedge clk ) begin
-		if (rst) begin
-			for(i = 0; i < 32; i = i + 1)
-				icache[i][136] <= `False_v;
-		end
-		else if(rdy && sta == 2'b01) begin
-			icache[pc[8:4]] <= {1'b1, pc[16:9], ram_inst};
-		end
-	end
 
 	always @ ( posedge clk ) begin
 		if (rst) begin
